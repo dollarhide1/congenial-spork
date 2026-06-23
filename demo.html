@@ -1,0 +1,732 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Live Demo — Nursing School Budget Planner</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --stone-50: #f7f8fa;
+    --stone-100: #eef0f3;
+    --stone-200: #e1e4e9;
+    --stone-300: #cbcfd6;
+    --stone-400: #9ba1ab;
+    --stone-500: #6d737e;
+    --stone-600: #565c66;
+    --stone-700: #434851;
+    --stone-800: #353a41;
+    --stone-900: #262a30;
+
+    /* Default: Periwinkle (matches the landing page) */
+    --teal-50: #eff3fa;
+    --teal-100: #dee7f4;
+    --teal-200: #c5d5ec;
+    --teal-300: #9bb4dd;
+    --teal-600: #6c8bc0;
+    --teal-700: #5a78ad;
+    --teal-800: #4b6694;
+
+    --rose-50: #fbf2f0;
+    --rose-300: #f0c4bb;
+    --rose-500: #dba398;
+
+    --emerald-400: #9bb4dd;
+    --amber-400: #e7c891;
+    --amber-50: #fffbeb;
+    --amber-200: #fde68a;
+    --amber-700: #b45309;
+
+    --bg-grad: linear-gradient(160deg, #e9eff8 0%, #d4e0f1 55%, #c2d3ea 100%);
+    --summary-grad: linear-gradient(160deg, #3f5585 0%, #354873 50%, #3b5080 100%);
+    --blob-1: rgba(155,180,221,0.32);
+    --blob-2: rgba(219,163,152,0.22);
+  }
+
+  body {
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+    background: var(--bg-grad);
+    background-attachment: fixed;
+    min-height: 100vh;
+    padding: 16px;
+    color: var(--stone-800);
+    line-height: 1.5;
+    transition: background 0.4s ease;
+  }
+  @media (min-width: 768px) { body { padding: 32px; } }
+
+  .container { max-width: 1024px; margin: 0 auto; }
+
+  /* ----- Demo banner ----- */
+  .demo-banner {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    background: var(--summary-grad);
+    color: white;
+    border-radius: 14px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    box-shadow: 0 14px 30px -14px rgba(38,42,48,0.5);
+    position: relative;
+    overflow: hidden;
+  }
+  .demo-banner::after {
+    content: '';
+    position: absolute;
+    width: 200px; height: 200px; border-radius: 50%;
+    background: rgba(155,180,221,0.28);
+    filter: blur(46px); top: -90px; right: -50px; pointer-events: none;
+  }
+  .demo-banner-text { position: relative; display: flex; align-items: center; gap: 12px; }
+  .demo-pill {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600;
+    background: rgba(255,255,255,0.16);
+    border: 1px solid rgba(255,255,255,0.22);
+    padding: 4px 10px; border-radius: 9999px; white-space: nowrap;
+  }
+  .demo-banner-text p { font-size: 13.5px; color: rgba(255,255,255,0.88); }
+  .demo-banner-text strong { color: white; font-weight: 600; }
+  .demo-unlock {
+    position: relative;
+    display: inline-flex; align-items: center; gap: 8px;
+    background: white; color: var(--stone-900);
+    padding: 10px 18px; border-radius: 10px;
+    font-family: inherit; font-size: 14px; font-weight: 600;
+    text-decoration: none; cursor: pointer; border: none;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 8px 18px -8px rgba(0,0,0,0.45);
+    white-space: nowrap;
+  }
+  .demo-unlock:hover { transform: translateY(-1px); box-shadow: 0 12px 22px -8px rgba(0,0,0,0.5); }
+  .demo-unlock .tag {
+    background: var(--teal-50); color: var(--teal-800);
+    padding: 2px 8px; border-radius: 6px; font-variant-numeric: tabular-nums;
+  }
+
+  /* ----- Header ----- */
+  header.page-head { text-align: center; margin-bottom: 24px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px;
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
+    border: 1px solid var(--stone-200); border-radius: 9999px; margin-bottom: 12px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
+    color: var(--stone-600); font-weight: 500;
+  }
+  .badge svg { color: var(--rose-500); fill: var(--rose-500); }
+  h1.title {
+    font-family: 'Fraunces', Georgia, serif; font-size: clamp(28px, 5vw, 48px);
+    color: var(--stone-800); font-weight: 600; margin-bottom: 8px; letter-spacing: -0.02em;
+  }
+  h1.title em { color: var(--teal-700); font-style: italic; }
+  .subtitle { color: var(--stone-500); font-size: 15px; max-width: 540px; margin: 0 auto; }
+
+  /* ----- Settings bar ----- */
+  .settings {
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
+    border: 1px solid var(--stone-200); border-radius: 12px; padding: 16px;
+    margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center;
+    gap: 12px; justify-content: space-between; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  .settings-group {
+    display: flex; align-items: center; gap: 12px; font-size: 14px;
+    color: var(--stone-600); flex-wrap: wrap;
+  }
+  .settings-group label { font-weight: 500; }
+  .button-group { display: flex; gap: 6px; flex-wrap: wrap; }
+
+  input[type="number"].sem-input {
+    width: 64px; padding: 6px 8px; text-align: center; background: white;
+    border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit;
+    font-size: 14px; color: var(--stone-800);
+  }
+  input[type="number"].sem-input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px var(--teal-100); }
+  input[type="checkbox"] { accent-color: var(--teal-700); width: 16px; height: 16px; }
+  .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
+
+  .btn {
+    display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
+    font-size: 13px; border-radius: 8px; font-family: inherit; cursor: pointer;
+    border: none; font-weight: 500; transition: all 0.15s; white-space: nowrap;
+  }
+  .btn-secondary { background: white; color: var(--stone-700); border: 1px solid var(--stone-200); }
+  .btn-secondary:hover { background: var(--stone-50); }
+  .btn-warn { background: white; color: var(--amber-700); border: 1px solid var(--amber-200); }
+  .btn-warn:hover { background: var(--amber-50); }
+  .btn svg { width: 14px; height: 14px; }
+
+  /* Locked buttons */
+  .btn-locked {
+    background: var(--stone-50); color: var(--stone-400);
+    border: 1px dashed var(--stone-300); position: relative;
+  }
+  .btn-locked:hover { background: white; color: var(--stone-500); }
+  .btn-locked .lock { width: 13px; height: 13px; opacity: 0.8; }
+
+  /* ----- Theme picker ----- */
+  .theme-bar {
+    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
+    border: 1px solid var(--stone-200); border-radius: 12px; padding: 12px 16px;
+    margin-bottom: 24px; display: flex; align-items: center; gap: 14px;
+    flex-wrap: wrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+  }
+  .theme-bar .theme-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--stone-600); }
+  .theme-bar .theme-label svg { width: 16px; height: 16px; color: var(--teal-700); }
+  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+  .swatch {
+    width: 30px; height: 30px; border-radius: 9999px; border: 2px solid white;
+    cursor: pointer; padding: 0; box-shadow: 0 0 0 1px var(--stone-200), 0 1px 3px rgba(0,0,0,0.12);
+    transition: transform 0.15s, box-shadow 0.15s; position: relative;
+  }
+  .swatch:hover { transform: scale(1.12); }
+  .swatch.active { box-shadow: 0 0 0 2px var(--stone-800), 0 1px 3px rgba(0,0,0,0.15); transform: scale(1.08); }
+  .swatch.active::after {
+    content: ''; position: absolute; inset: 0; margin: auto; width: 9px; height: 9px;
+    border-radius: 50%; background: rgba(255,255,255,0.92);
+  }
+  .swatch-name { font-size: 13px; color: var(--stone-500); min-width: 76px; font-weight: 500; }
+
+  /* ----- Toast ----- */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
+    background: var(--stone-900); color: white; padding: 12px 20px; border-radius: 10px;
+    font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
+    display: flex; align-items: center; gap: 8px; transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0; pointer-events: none;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast svg { width: 16px; height: 16px; }
+
+  /* ----- Categories ----- */
+  .category {
+    background: white; border-radius: 12px; border: 1px solid var(--stone-200);
+    overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  }
+  .category.income { border-color: var(--teal-200); }
+  .cat-header {
+    padding: 12px 20px; display: flex; align-items: center; gap: 12px;
+    background: linear-gradient(to right, var(--stone-50), var(--rose-50));
+    border-bottom: 1px solid var(--stone-100);
+  }
+  .category.income .cat-header { background: linear-gradient(to right, var(--teal-50), var(--teal-100)); border-bottom-color: var(--teal-100); }
+  .cat-icon {
+    width: 36px; height: 36px; border-radius: 8px; background: var(--stone-700);
+    color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .category.income .cat-icon { background: var(--teal-700); }
+  .cat-icon svg { width: 18px; height: 18px; stroke-width: 1.75; }
+  .cat-title { font-family: 'Fraunces', Georgia, serif; font-size: 18px; color: var(--stone-800); font-weight: 500; }
+
+  .col-headers {
+    display: none; grid-template-columns: 5fr 3fr 3fr 1fr; gap: 12px; padding: 8px 20px;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-400);
+    font-weight: 500; border-bottom: 1px solid var(--stone-100);
+  }
+  @media (min-width: 768px) { .col-headers { display: grid; } }
+  .col-headers .right { text-align: right; }
+
+  .row {
+    padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px;
+    align-items: center; border-bottom: 1px solid var(--stone-100); transition: background 0.15s;
+  }
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--stone-50); }
+  @media (min-width: 768px) { .row { grid-template-columns: 5fr 3fr 3fr 1fr; } }
+  .row-label { font-size: 14px; color: var(--stone-700); }
+  .input-cell { display: flex; align-items: center; gap: 8px; }
+  .mobile-label { font-size: 11px; color: var(--stone-400); width: 96px; flex-shrink: 0; }
+  @media (min-width: 768px) { .mobile-label { display: none; } }
+
+  .currency-input { position: relative; flex: 1; min-width: 0; }
+  .currency-input::before {
+    content: "$"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+    color: var(--stone-400); font-size: 14px; font-family: 'Fraunces', serif; pointer-events: none;
+  }
+  .currency-input input {
+    width: 100%; padding: 8px 12px 8px 28px; text-align: right; background: white;
+    border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 14px;
+    color: var(--stone-800); font-variant-numeric: tabular-nums;
+  }
+  .currency-input input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px var(--teal-100); }
+  .currency-input input::-webkit-outer-spin-button, .currency-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+  .currency-input input[type=number] { -moz-appearance: textfield; }
+
+  .calc-display {
+    flex: 1; padding: 8px 12px; text-align: right; background: var(--stone-50);
+    border: 1px solid var(--stone-100); border-radius: 6px; color: var(--stone-500);
+    font-size: 14px; font-variant-numeric: tabular-nums;
+  }
+
+  .subtotal {
+    padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px;
+    align-items: center; background: var(--stone-50); border-top: 1px solid var(--stone-100);
+  }
+  @media (min-width: 768px) { .subtotal { grid-template-columns: 5fr 3fr 3fr 1fr; } }
+  .category.income .subtotal { background: var(--teal-50); border-top-color: var(--teal-100); }
+  .subtotal-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-500); font-weight: 600; }
+  .subtotal-value { text-align: right; font-size: 14px; font-weight: 600; color: var(--stone-800); font-variant-numeric: tabular-nums; }
+
+  /* ----- Locked categories teaser ----- */
+  .locked-card {
+    background: white; border: 1px dashed var(--stone-300); border-radius: 12px;
+    padding: 24px; margin-bottom: 16px; text-align: center;
+  }
+  .locked-card .lock-ico {
+    width: 44px; height: 44px; border-radius: 11px; margin: 0 auto 14px;
+    background: var(--teal-50); color: var(--teal-700); display: grid; place-items: center;
+  }
+  .locked-card .lock-ico svg { width: 22px; height: 22px; }
+  .locked-card h3 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; color: var(--stone-800); margin-bottom: 6px; }
+  .locked-card p { font-size: 14px; color: var(--stone-600); max-width: 40em; margin: 0 auto 16px; }
+  .locked-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
+  .locked-chip {
+    display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--stone-500);
+    background: var(--stone-50); border: 1px solid var(--stone-200); padding: 6px 13px; border-radius: 9999px;
+  }
+  .locked-chip svg { width: 12px; height: 12px; color: var(--stone-400); }
+  .unlock-btn {
+    display: inline-flex; align-items: center; gap: 9px; padding: 12px 22px;
+    background: var(--stone-900); color: white; border: none; border-radius: 11px;
+    font-family: inherit; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer;
+    transition: transform 0.15s, background 0.15s, box-shadow 0.15s; box-shadow: 0 8px 20px -8px rgba(38,42,48,0.45);
+  }
+  .unlock-btn:hover { background: var(--teal-700); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(90,120,173,0.5); }
+  .unlock-btn .tag { background: rgba(255,255,255,0.16); padding: 3px 9px; border-radius: 7px; font-variant-numeric: tabular-nums; }
+
+  /* ----- Summary ----- */
+  .summary {
+    background: var(--summary-grad); color: white; border-radius: 16px; padding: 24px;
+    box-shadow: 0 20px 35px -10px rgba(38, 42, 48, 0.35); position: relative; overflow: hidden;
+    transition: background 0.4s ease;
+  }
+  @media (min-width: 768px) { .summary { padding: 32px; } }
+  .summary::before, .summary::after { content: ''; position: absolute; width: 256px; height: 256px; border-radius: 50%; filter: blur(48px); pointer-events: none; }
+  .summary::before { top: -80px; right: -80px; background: var(--blob-1); }
+  .summary::after { bottom: -80px; left: -80px; background: var(--blob-2); }
+  .summary-content { position: relative; }
+  .summary h2 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; margin-bottom: 4px; font-weight: 500; }
+  .summary-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 24px; }
+  .summary-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
+  @media (min-width: 768px) { .summary-grid { grid-template-columns: 1fr 1fr 1fr; } }
+  .stat-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.12); }
+  .stat-card.surplus { background: color-mix(in srgb, var(--teal-300) 22%, transparent); border-color: color-mix(in srgb, var(--teal-300) 45%, transparent); }
+  .stat-card.shortfall { background: color-mix(in srgb, var(--rose-500) 22%, transparent); border-color: color-mix(in srgb, var(--rose-500) 45%, transparent); }
+  .stat-label { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.65); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .stat-label svg { width: 14px; height: 14px; }
+  .stat-card.surplus .stat-label, .stat-card.shortfall .stat-label { color: rgba(255,255,255,0.85); }
+  .stat-value { font-family: 'Fraunces', Georgia, serif; font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
+  @media (min-width: 768px) { .stat-value { font-size: 32px; } }
+  .stat-card.surplus .stat-value { color: var(--teal-300); }
+  .stat-card.shortfall .stat-value { color: var(--rose-300); }
+  .stat-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .summary-note {
+    position: relative; margin-top: 22px; font-size: 12.5px; color: rgba(255,255,255,0.72);
+    display: flex; align-items: center; gap: 8px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.14);
+  }
+  .summary-note svg { width: 15px; height: 15px; flex-shrink: 0; }
+  .summary-note a { color: white; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
+  .page-footer { text-align: center; margin-top: 32px; font-size: 12px; color: var(--stone-600); }
+  .page-footer a { color: var(--teal-800); text-decoration: none; font-weight: 500; }
+  .page-footer a:hover { text-decoration: underline; }
+
+  input[type=number] { -moz-appearance: textfield; }
+  :focus-visible { outline: 2px solid var(--teal-700); outline-offset: 2px; border-radius: 6px; }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- DEMO BANNER -->
+  <div class="demo-banner">
+    <div class="demo-banner-text">
+      <span class="demo-pill">Live Demo</span>
+      <p>You're trying the planner. <strong>Three categories are unlocked</strong> — the full version has all eight, plus Excel export and save.</p>
+    </div>
+    <a class="demo-unlock" id="bannerUnlock" href="index.html#pricing">
+      Unlock everything <span class="tag">$12.99</span>
+    </a>
+  </div>
+
+  <header class="page-head">
+    <div class="badge">
+      <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
+      <span>For Future Nurses</span>
+    </div>
+    <h1 class="title">Nursing School <em>Budget Planner</em></h1>
+    <p class="subtitle">Type in a few numbers and watch the bottom line update. This is exactly how the full planner works.</p>
+  </header>
+
+  <div class="settings">
+    <div class="settings-group">
+      <label for="semesters">Semesters:</label>
+      <input type="number" id="semesters" class="sem-input" min="1" max="12" value="4" />
+      <label class="checkbox-label">
+        <input type="checkbox" id="autoTotal" checked />
+        Auto-calc totals
+      </label>
+    </div>
+    <div class="button-group">
+      <button class="btn btn-locked" id="exportBtn" title="Available in the full version">
+        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Export to Excel
+      </button>
+      <button class="btn btn-locked" id="saveBtn" title="Available in the full version">
+        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+        Save
+      </button>
+      <button class="btn btn-warn" id="clearBtn" title="Clear all entries">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+        Clear
+      </button>
+    </div>
+  </div>
+
+  <!-- THEME PICKER -->
+  <div class="theme-bar">
+    <span class="theme-label">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
+      Color theme
+    </span>
+    <div class="swatches" id="swatches"></div>
+    <span class="swatch-name" id="themeName">Periwinkle</span>
+  </div>
+
+  <div id="categoriesContainer"></div>
+
+  <!-- LOCKED CATEGORIES TEASER -->
+  <div class="locked-card">
+    <div class="lock-ico">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+    </div>
+    <h3>Five more categories in the full planner</h3>
+    <p>The complete version adds every cost nursing students actually face — so nothing sneaks up on you mid-program.</p>
+    <div class="locked-chips" id="lockedChips"></div>
+    <a class="unlock-btn" id="teaserUnlock" href="index.html#pricing">
+      Unlock the full planner <span class="tag">$12.99</span>
+    </a>
+  </div>
+
+  <section class="summary">
+    <div class="summary-content">
+      <h2>The Bottom Line</h2>
+      <p class="summary-sub">Based on the categories in this demo.</p>
+      <div class="summary-grid">
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
+            Total Expenses
+          </div>
+          <div class="stat-value" id="totalExpenses">$0</div>
+          <div class="stat-sub" id="totalExpensesSem">$0 per semester</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+            Total Income
+          </div>
+          <div class="stat-value" id="totalIncome">$0</div>
+          <div class="stat-sub" id="totalIncomeSem">$0 per semester</div>
+        </div>
+        <div class="stat-card surplus" id="diffCard">
+          <div class="stat-label">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
+            <span id="diffLabel">Surplus</span>
+          </div>
+          <div class="stat-value" id="diffValue">$0</div>
+          <div class="stat-sub" id="diffSub">$0 per semester</div>
+        </div>
+      </div>
+      <p class="summary-note">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+        This demo only adds up the unlocked categories. The full version totals all eight and exports to Excel. <a href="index.html#pricing">Get it for $12.99 →</a>
+      </p>
+    </div>
+  </section>
+
+  <p class="page-footer">This is a free demo of the Nursing School Budget Planner. &nbsp;·&nbsp; <a href="index.html">Back to home</a></p>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <svg id="toastIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+  // ---- Checkout wiring (matches index.html) ----
+  const CHECKOUT_URL = ""; // paste your Stripe Payment Link to send "unlock" clicks to checkout
+  const UNLOCK_HREF = CHECKOUT_URL || "index.html#pricing";
+
+  // ---- Icons ----
+  const ICONS = {
+    grad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>',
+  };
+
+  // ---- Themes (same palette as full planner) ----
+  const THEMES = {
+    seafoam: { name: 'Seafoam', swatch: '#9ec9c4', vars: {
+      '--teal-50':'#eef6f5','--teal-100':'#ddeceb','--teal-200':'#c4dedb','--teal-300':'#9ec9c4','--teal-600':'#6fa39d','--teal-700':'#5d918b','--teal-800':'#4d7975',
+      '--rose-50':'#fbf2f0','--rose-300':'#f0c6bd','--rose-500':'#dba89c','--emerald-400':'#9ec9c4',
+      '--bg-grad':'linear-gradient(160deg,#eaf4f2 0%,#d6ebe7 55%,#c6e1dd 100%)',
+      '--summary-grad':'linear-gradient(160deg,#456f6b 0%,#3b5f5c 50%,#41706b 100%)',
+      '--blob-1':'rgba(158,201,196,0.30)','--blob-2':'rgba(219,168,156,0.22)'
+    }},
+    lavender: { name: 'Lavender', swatch: '#bda9d6', vars: {
+      '--teal-50':'#f3f0f8','--teal-100':'#e8e1f1','--teal-200':'#d7cbe7','--teal-300':'#bda9d6','--teal-600':'#9075b2','--teal-700':'#7d62a1','--teal-800':'#69508e',
+      '--rose-50':'#fbf3ee','--rose-300':'#f0cdb4','--rose-500':'#dba98a','--emerald-400':'#bda9d6',
+      '--bg-grad':'linear-gradient(160deg,#efe9f6 0%,#e0d4ee 55%,#d2c3e6 100%)',
+      '--summary-grad':'linear-gradient(160deg,#574580 0%,#4c3b6f 50%,#574a82 100%)',
+      '--blob-1':'rgba(189,169,214,0.32)','--blob-2':'rgba(219,169,138,0.22)'
+    }},
+    blush: { name: 'Blush', swatch: '#e1aab2', vars: {
+      '--teal-50':'#fbf1f3','--teal-100':'#f6e4e7','--teal-200':'#efd1d6','--teal-300':'#e1aab2','--teal-600':'#bf7e87','--teal-700':'#ac6a74','--teal-800':'#955762',
+      '--rose-50':'#f1f4ef','--rose-300':'#bdd0b4','--rose-500':'#97b58c','--emerald-400':'#e1aab2',
+      '--bg-grad':'linear-gradient(160deg,#f8eef0 0%,#f1dde1 55%,#ebccd2 100%)',
+      '--summary-grad':'linear-gradient(160deg,#7a4e57 0%,#693f49 50%,#5e3a44 100%)',
+      '--blob-1':'rgba(225,170,178,0.32)','--blob-2':'rgba(151,181,140,0.22)'
+    }},
+    sage: { name: 'Sage', swatch: '#a9c49b', vars: {
+      '--teal-50':'#f0f4ee','--teal-100':'#e2eadd','--teal-200':'#cddcc4','--teal-300':'#a9c49b','--teal-600':'#7a9b6b','--teal-700':'#688a59','--teal-800':'#577449',
+      '--rose-50':'#faf2ee','--rose-300':'#e6bda6','--rose-500':'#cf9b81','--emerald-400':'#a9c49b',
+      '--bg-grad':'linear-gradient(160deg,#eaf1e6 0%,#d8e6d0 55%,#c8dabd 100%)',
+      '--summary-grad':'linear-gradient(160deg,#4e6b42 0%,#425b38 50%,#48663c 100%)',
+      '--blob-1':'rgba(169,196,155,0.30)','--blob-2':'rgba(207,155,129,0.22)'
+    }},
+    apricot: { name: 'Apricot', swatch: '#e3b48a', vars: {
+      '--teal-50':'#fbf3ed','--teal-100':'#f6e7da','--teal-200':'#efd4bd','--teal-300':'#e3b48a','--teal-600':'#c08a5c','--teal-700':'#ad774a','--teal-800':'#96633b',
+      '--rose-50':'#eef6f5','--rose-300':'#a8d0cb','--rose-500':'#7fb0aa','--emerald-400':'#e3b48a',
+      '--bg-grad':'linear-gradient(160deg,#fbefe4 0%,#f3ddc8 55%,#ecceb0 100%)',
+      '--summary-grad':'linear-gradient(160deg,#7a5638 0%,#69472d 50%,#5e4029 100%)',
+      '--blob-1':'rgba(227,180,138,0.32)','--blob-2':'rgba(127,176,170,0.22)'
+    }},
+    periwinkle: { name: 'Periwinkle', swatch: '#9bb4dd', vars: {
+      '--teal-50':'#eff3fa','--teal-100':'#dee7f4','--teal-200':'#c5d5ec','--teal-300':'#9bb4dd','--teal-600':'#6c8bc0','--teal-700':'#5a78ad','--teal-800':'#4b6694',
+      '--rose-50':'#fbf2f0','--rose-300':'#f0c4bb','--rose-500':'#dba398','--emerald-400':'#9bb4dd',
+      '--bg-grad':'linear-gradient(160deg,#e9eff8 0%,#d4e0f1 55%,#c2d3ea 100%)',
+      '--summary-grad':'linear-gradient(160deg,#3f5585 0%,#354873 50%,#3b5080 100%)',
+      '--blob-1':'rgba(155,180,221,0.32)','--blob-2':'rgba(219,163,152,0.22)'
+    }},
+  };
+  let currentTheme = 'periwinkle';
+
+  function applyTheme(key) {
+    const theme = THEMES[key];
+    if (!theme) return;
+    currentTheme = key;
+    const root = document.documentElement;
+    Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
+    document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.theme === key));
+    const nameEl = document.getElementById('themeName');
+    if (nameEl) nameEl.textContent = theme.name;
+  }
+
+  function buildSwatches() {
+    const wrap = document.getElementById('swatches');
+    wrap.innerHTML = '';
+    Object.entries(THEMES).forEach(([key, t]) => {
+      const b = document.createElement('button');
+      b.className = 'swatch' + (key === currentTheme ? ' active' : '');
+      b.style.background = t.swatch;
+      b.dataset.theme = key;
+      b.title = t.name;
+      b.setAttribute('aria-label', t.name + ' theme');
+      b.addEventListener('click', () => applyTheme(key));
+      wrap.appendChild(b);
+    });
+  }
+
+  // ---- Demo categories (3 of 8) ----
+  const CATEGORIES = [
+    { id: 'tuition', name: 'Tuition & School Fees', icon: ICONS.grad, type: 'expense', items: [
+      { id: 'tuition', label: 'Tuition' },
+      { id: 'registration', label: 'Registration Fees' },
+      { id: 'lab_fees', label: 'Lab Fees' },
+    ]},
+    { id: 'books', name: 'Books & Supplies', icon: ICONS.book, type: 'expense', items: [
+      { id: 'textbooks', label: 'Textbooks' },
+      { id: 'online_access', label: 'Online Access' },
+      { id: 'laptop', label: 'Laptop' },
+    ]},
+    { id: 'income', name: 'Income & Financial Aid', icon: ICONS.wallet, type: 'income', items: [
+      { id: 'savings', label: 'Savings' },
+      { id: 'scholarships', label: 'Scholarships' },
+      { id: 'loans', label: 'Student Loans' },
+    ]},
+  ];
+
+  // ---- Locked category names (teaser) ----
+  const LOCKED_CATEGORIES = ['Clinical Requirements', 'Equipment', 'Transportation', 'Living Expenses', 'Personal & Misc.'];
+
+  // ---- State ----
+  const state = {};
+  CATEGORIES.forEach(c => c.items.forEach(it => {
+    state[`${c.id}.${it.id}.semester`] = 0;
+    state[`${c.id}.${it.id}.total`] = 0;
+  }));
+  let semesters = 4;
+  let autoTotal = true;
+
+  const fmt = n => '$' + Math.round(n || 0).toLocaleString('en-US');
+  const getRow = (catId, itemId, field) => {
+    if (field === 'total' && autoTotal) return (state[`${catId}.${itemId}.semester`] || 0) * semesters;
+    return state[`${catId}.${itemId}.${field}`] || 0;
+  };
+  const getCatTotal = (catId, field) => {
+    const cat = CATEGORIES.find(c => c.id === catId);
+    return cat.items.reduce((s, it) => s + getRow(catId, it.id, field), 0);
+  };
+
+  // ---- Toast ----
+  function showToast(message) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toastMsg').textContent = message;
+    toast.classList.add('show');
+    clearTimeout(window._toastTimer);
+    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+  }
+
+  // ---- Render ----
+  function renderCategories() {
+    const container = document.getElementById('categoriesContainer');
+    container.innerHTML = '';
+    CATEGORIES.forEach(cat => {
+      const section = document.createElement('section');
+      section.className = 'category' + (cat.type === 'income' ? ' income' : '');
+      section.innerHTML = `
+        <header class="cat-header">
+          <div class="cat-icon">${cat.icon}</div>
+          <h2 class="cat-title">${cat.name}</h2>
+        </header>
+        <div class="col-headers">
+          <div>Item</div><div class="right">Per Semester</div><div class="right">Program Total</div><div></div>
+        </div>
+        <div class="rows">
+          ${cat.items.map(it => `
+            <div class="row">
+              <label class="row-label">${it.label}</label>
+              <div class="input-cell">
+                <span class="mobile-label">Per semester</span>
+                <div class="currency-input">
+                  <input type="number" min="0" step="any" placeholder="0" data-field="semester" data-cat="${cat.id}" data-item="${it.id}" />
+                </div>
+              </div>
+              <div class="input-cell">
+                <span class="mobile-label">Program total</span>
+                ${autoTotal
+                  ? `<div class="calc-display" data-cat="${cat.id}" data-item="${it.id}">$0</div>`
+                  : `<div class="currency-input"><input type="number" min="0" step="any" placeholder="0" data-field="total" data-cat="${cat.id}" data-item="${it.id}" /></div>`}
+              </div>
+              <div></div>
+            </div>
+          `).join('')}
+        </div>
+        <footer class="subtotal">
+          <div class="subtotal-label">Subtotal</div>
+          <div class="subtotal-value" data-subtotal="semester" data-cat="${cat.id}">$0</div>
+          <div class="subtotal-value" data-subtotal="total" data-cat="${cat.id}">$0</div>
+          <div></div>
+        </footer>`;
+      container.appendChild(section);
+    });
+
+    container.querySelectorAll('input[type="number"][data-field]').forEach(input => {
+      const key = `${input.dataset.cat}.${input.dataset.item}.${input.dataset.field}`;
+      if (state[key]) input.value = state[key];
+      input.addEventListener('input', e => { state[key] = parseFloat(e.target.value) || 0; updateAll(); });
+    });
+  }
+
+  function buildLockedChips() {
+    const wrap = document.getElementById('lockedChips');
+    wrap.innerHTML = '';
+    LOCKED_CATEGORIES.forEach(name => {
+      const chip = document.createElement('span');
+      chip.className = 'locked-chip';
+      chip.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${name}`;
+      wrap.appendChild(chip);
+    });
+  }
+
+  function updateAll() {
+    document.querySelectorAll('.calc-display').forEach(el => {
+      el.textContent = fmt(getRow(el.dataset.cat, el.dataset.item, 'total'));
+    });
+    document.querySelectorAll('[data-subtotal]').forEach(el => {
+      el.textContent = fmt(getCatTotal(el.dataset.cat, el.dataset.subtotal));
+    });
+
+    const expCats = CATEGORIES.filter(c => c.type === 'expense');
+    const totExpSem = expCats.reduce((s, c) => s + getCatTotal(c.id, 'semester'), 0);
+    const totExpTot = expCats.reduce((s, c) => s + getCatTotal(c.id, 'total'), 0);
+    const totIncSem = getCatTotal('income', 'semester');
+    const totIncTot = getCatTotal('income', 'total');
+    const diffSem = totIncSem - totExpSem;
+    const diffTot = totIncTot - totExpTot;
+
+    document.getElementById('totalExpenses').textContent = fmt(totExpTot);
+    document.getElementById('totalExpensesSem').textContent = fmt(totExpSem) + ' per semester';
+    document.getElementById('totalIncome').textContent = fmt(totIncTot);
+    document.getElementById('totalIncomeSem').textContent = fmt(totIncSem) + ' per semester';
+
+    const diffCard = document.getElementById('diffCard');
+    const diffLabel = document.getElementById('diffLabel');
+    diffCard.classList.remove('surplus', 'shortfall');
+    if (diffTot >= 0) { diffCard.classList.add('surplus'); diffLabel.textContent = 'Surplus'; }
+    else { diffCard.classList.add('shortfall'); diffLabel.textContent = 'Shortfall'; }
+    document.getElementById('diffValue').textContent = fmt(Math.abs(diffTot));
+    document.getElementById('diffSub').textContent = fmt(Math.abs(diffSem)) + ' per semester';
+  }
+
+  // ---- Settings ----
+  document.getElementById('semesters').addEventListener('input', e => {
+    semesters = Math.max(1, parseInt(e.target.value) || 1); updateAll();
+  });
+  document.getElementById('autoTotal').addEventListener('change', e => {
+    autoTotal = e.target.checked; renderCategories(); updateAll();
+  });
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    if (!confirm('Clear all entries in this demo?')) return;
+    Object.keys(state).forEach(k => state[k] = 0);
+    semesters = 4; autoTotal = true;
+    document.getElementById('semesters').value = 4;
+    document.getElementById('autoTotal').checked = true;
+    applyTheme('periwinkle');
+    renderCategories(); updateAll();
+    showToast('Demo cleared');
+  });
+
+  // ---- Locked features ----
+  function goUnlock() { window.location.href = UNLOCK_HREF; }
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    showToast('Excel export is in the full version — unlocking…');
+    setTimeout(goUnlock, 900);
+  });
+  document.getElementById('saveBtn').addEventListener('click', () => {
+    showToast('Saving is in the full version — unlocking…');
+    setTimeout(goUnlock, 900);
+  });
+
+  // ---- Wire unlock links to checkout if set ----
+  ['bannerUnlock', 'teaserUnlock'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.setAttribute('href', UNLOCK_HREF);
+  });
+
+  // ---- Init ----
+  buildSwatches();
+  applyTheme(currentTheme);
+  buildLockedChips();
+  renderCategories();
+  updateAll();
+</script>
+</body>
+</html>

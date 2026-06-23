@@ -1,0 +1,34 @@
+# Netlify configuration — Nursing School Budget Planner
+# This is a plain static site (HTML/CSS/JS), so there is no build step.
+
+[build]
+  # Publish the repository root, where index.html lives.
+  publish = "."
+  # No build command needed for a static site.
+  command = ""
+
+# Friendly URL: /planner -> planner.html
+[[redirects]]
+  from = "/planner"
+  to = "/planner.html"
+  status = 200
+
+# Friendly URL: /demo -> demo.html
+[[redirects]]
+  from = "/demo"
+  to = "/demo.html"
+  status = 200
+
+# Send unknown paths back to the landing page instead of a 404.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 404
+
+# Light security + caching headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"

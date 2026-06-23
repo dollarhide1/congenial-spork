@@ -1,0 +1,22 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Logs & deps (not needed for a static site, but just in case)
+node_modules/
+npm-debug.log*
+*.log
+
+# Netlify local state
+.netlify/
+
+# Environment
+.env
+.env.*
