@@ -3,730 +3,1149 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Live Demo — Nursing School Budget Planner</title>
+<title>Nursing School Budget Planner — Live Demo</title>
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,400;0,500;0,600;1,400&family=Inter:wght@400;500;600&display=swap" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   :root {
-    --stone-50: #f7f8fa;
-    --stone-100: #eef0f3;
-    --stone-200: #e1e4e9;
-    --stone-300: #cbcfd6;
-    --stone-400: #9ba1ab;
-    --stone-500: #6d737e;
-    --stone-600: #565c66;
-    --stone-700: #434851;
-    --stone-800: #353a41;
-    --stone-900: #262a30;
-
-    /* Default: Periwinkle (matches the landing page) */
-    --teal-50: #eff3fa;
-    --teal-100: #dee7f4;
-    --teal-200: #c5d5ec;
-    --teal-300: #9bb4dd;
-    --teal-600: #6c8bc0;
-    --teal-700: #5a78ad;
-    --teal-800: #4b6694;
-
-    --rose-50: #fbf2f0;
-    --rose-300: #f0c4bb;
-    --rose-500: #dba398;
-
-    --emerald-400: #9bb4dd;
-    --amber-400: #e7c891;
-    --amber-50: #fffbeb;
-    --amber-200: #fde68a;
-    --amber-700: #b45309;
-
-    --bg-grad: linear-gradient(160deg, #e9eff8 0%, #d4e0f1 55%, #c2d3ea 100%);
-    --summary-grad: linear-gradient(160deg, #3f5585 0%, #354873 50%, #3b5080 100%);
-    --blob-1: rgba(155,180,221,0.32);
-    --blob-2: rgba(219,163,152,0.22);
+    --stone-50: #fafaf9; --stone-100: #f5f5f4; --stone-200: #e7e5e4;
+    --stone-300: #d6d3d1; --stone-400: #a8a29e; --stone-500: #78716c;
+    --stone-600: #57534e; --stone-700: #44403c; --stone-800: #292524;
+    --stone-900: #1c1917;
+    /* Accent ramp — driven by the color-theme picker (default: Periwinkle) */
+    --teal-50: #eff3fa; --teal-100: #dee7f4;
+    --teal-200: #c5d5ec; --teal-300: #9bb4dd; --teal-600: #6c8bc0;
+    --teal-700: #5a78ad; --teal-800: #4b6694; --rose-50: #fff1f2;
+    --rose-300: #fda4af; --rose-500: #f43f5e; --emerald-400: #34d399;
+    --emerald-600: #059669; --amber-400: #fbbf24; --amber-50: #fffbeb;
+    --amber-200: #fde68a; --amber-600: #d97706; --amber-700: #b45309;
+    --blue-50: #eff6ff; --blue-200: #bfdbfe; --blue-600: #2563eb;
+    --gray-50: #f9fafb; --gray-200: #e5e7eb; --gray-600: #4b5563;
+    /* Theme-driven decorative tokens */
+    --heart: #db83ad;
+    --bg-tint-a: rgba(197,213,236,0.6);
+    --bg-tint-b: rgba(212,224,241,0.5);
+    --glow-a: rgba(90,120,173,0.2);
+    --glow-b: rgba(219,131,173,0.16);
   }
-
-  body {
-    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
-    background: var(--bg-grad);
-    background-attachment: fixed;
-    min-height: 100vh;
-    padding: 16px;
-    color: var(--stone-800);
-    line-height: 1.5;
-    transition: background 0.4s ease;
-  }
+  body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, var(--stone-50) 0%, var(--bg-tint-a) 50%, var(--bg-tint-b) 100%); min-height: 100vh; padding: 16px; color: var(--stone-800); line-height: 1.5; }
   @media (min-width: 768px) { body { padding: 32px; } }
-
   .container { max-width: 1024px; margin: 0 auto; }
-
-  /* ----- Demo banner ----- */
-  .demo-banner {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    background: var(--summary-grad);
-    color: white;
-    border-radius: 14px;
-    padding: 14px 18px;
-    margin-bottom: 20px;
-    box-shadow: 0 14px 30px -14px rgba(38,42,48,0.5);
-    position: relative;
-    overflow: hidden;
-  }
-  .demo-banner::after {
-    content: '';
-    position: absolute;
-    width: 200px; height: 200px; border-radius: 50%;
-    background: rgba(155,180,221,0.28);
-    filter: blur(46px); top: -90px; right: -50px; pointer-events: none;
-  }
-  .demo-banner-text { position: relative; display: flex; align-items: center; gap: 12px; }
-  .demo-pill {
-    font-size: 10px; text-transform: uppercase; letter-spacing: 0.18em; font-weight: 600;
-    background: rgba(255,255,255,0.16);
-    border: 1px solid rgba(255,255,255,0.22);
-    padding: 4px 10px; border-radius: 9999px; white-space: nowrap;
-  }
-  .demo-banner-text p { font-size: 13.5px; color: rgba(255,255,255,0.88); }
-  .demo-banner-text strong { color: white; font-weight: 600; }
-  .demo-unlock {
-    position: relative;
-    display: inline-flex; align-items: center; gap: 8px;
-    background: white; color: var(--stone-900);
-    padding: 10px 18px; border-radius: 10px;
-    font-family: inherit; font-size: 14px; font-weight: 600;
-    text-decoration: none; cursor: pointer; border: none;
-    transition: transform 0.15s, box-shadow 0.15s;
-    box-shadow: 0 8px 18px -8px rgba(0,0,0,0.45);
-    white-space: nowrap;
-  }
-  .demo-unlock:hover { transform: translateY(-1px); box-shadow: 0 12px 22px -8px rgba(0,0,0,0.5); }
-  .demo-unlock .tag {
-    background: var(--teal-50); color: var(--teal-800);
-    padding: 2px 8px; border-radius: 6px; font-variant-numeric: tabular-nums;
-  }
-
-  /* ----- Header ----- */
   header.page-head { text-align: center; margin-bottom: 24px; }
-  .badge {
-    display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px;
-    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
-    border: 1px solid var(--stone-200); border-radius: 9999px; margin-bottom: 12px;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em;
-    color: var(--stone-600); font-weight: 500;
-  }
-  .badge svg { color: var(--rose-500); fill: var(--rose-500); }
-  h1.title {
-    font-family: 'Fraunces', Georgia, serif; font-size: clamp(28px, 5vw, 48px);
-    color: var(--stone-800); font-weight: 600; margin-bottom: 8px; letter-spacing: -0.02em;
-  }
+  .badge { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; background: rgba(255,255,255,0.7); border: 1px solid var(--stone-200); border-radius: 9999px; margin-bottom: 12px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--stone-600); font-weight: 500; }
+  .badge svg { color: var(--heart); fill: var(--heart); }
+  h1.title { font-family: 'Fraunces', Georgia, serif; font-size: clamp(28px, 5vw, 48px); color: var(--stone-800); font-weight: 600; margin-bottom: 8px; letter-spacing: -0.02em; }
   h1.title em { color: var(--teal-700); font-style: italic; }
   .subtitle { color: var(--stone-500); font-size: 15px; max-width: 540px; margin: 0 auto; }
 
-  /* ----- Settings bar ----- */
-  .settings {
-    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
-    border: 1px solid var(--stone-200); border-radius: 12px; padding: 16px;
-    margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center;
-    gap: 12px; justify-content: space-between; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  }
-  .settings-group {
-    display: flex; align-items: center; gap: 12px; font-size: 14px;
-    color: var(--stone-600); flex-wrap: wrap;
-  }
+  .tabs { display: flex; justify-content: center; gap: 4px; margin-bottom: 24px; background: rgba(255,255,255,0.6); border: 1px solid var(--stone-200); border-radius: 12px; padding: 4px; max-width: 560px; margin-left: auto; margin-right: auto; flex-wrap: wrap; }
+  .tab { flex: 1; min-width: 110px; padding: 10px 14px; background: transparent; border: none; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; color: var(--stone-500); transition: all 0.2s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; white-space: nowrap; }
+  .tab:hover { color: var(--stone-700); }
+  .tab.active { background: var(--stone-900); color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+  .tab svg { width: 14px; height: 14px; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* ============ COLOR THEME PICKER ============ */
+  .theme-picker { display: flex; align-items: center; justify-content: center; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; }
+  .theme-picker-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.15em; color: var(--stone-500); font-weight: 500; }
+  .theme-swatches { display: flex; gap: 8px; }
+  .theme-swatch { width: 26px; height: 26px; border-radius: 50%; border: 2px solid white; cursor: pointer; padding: 0; box-shadow: 0 0 0 1px var(--stone-300); transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .theme-swatch:hover { transform: scale(1.12); }
+  .theme-swatch:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--stone-900); }
+  .theme-swatch.active { box-shadow: 0 0 0 2px var(--stone-900); }
+
+  .instructions-card { background: white; border-radius: 16px; border: 1px solid var(--stone-200); padding: 32px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  @media (min-width: 768px) { .instructions-card { padding: 48px; } }
+  .instructions-intro { font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 18px; line-height: 1.6; color: var(--stone-600); padding: 16px 24px; border-left: 3px solid var(--teal-700); background: var(--teal-50); border-radius: 0 8px 8px 0; margin-bottom: 32px; }
+  .step-list { list-style: none; counter-reset: step; }
+  .step-list li { counter-increment: step; display: grid; grid-template-columns: 48px 1fr; gap: 16px; padding: 18px 0; border-bottom: 1px dashed var(--stone-200); }
+  .step-list li:last-child { border-bottom: none; }
+  .step-list li::before { content: counter(step, decimal-leading-zero); font-family: 'Fraunces', Georgia, serif; font-style: italic; font-size: 28px; color: var(--teal-700); line-height: 1; align-self: start; padding-top: 4px; }
+  .step-content h3 { font-family: 'Fraunces', Georgia, serif; font-size: 17px; font-weight: 600; margin-bottom: 6px; color: var(--stone-800); }
+  .step-content p { font-size: 14px; color: var(--stone-600); line-height: 1.65; }
+  .tip-box { background: var(--teal-50); border: 1px solid var(--teal-200); padding: 16px 20px; margin-top: 24px; border-radius: 8px; position: relative; }
+  .tip-box::before { content: 'Pro Tip'; position: absolute; top: -10px; left: 16px; background: var(--teal-700); color: white; font-size: 10px; text-transform: uppercase; letter-spacing: 0.2em; padding: 4px 10px; border-radius: 4px; font-weight: 600; }
+  .tip-box p { font-size: 13px; color: var(--stone-700); line-height: 1.65; }
+  .start-btn-wrap { text-align: center; margin-top: 32px; }
+  .start-btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: var(--stone-900); color: white; border: none; border-radius: 10px; font-family: inherit; font-size: 15px; font-weight: 500; cursor: pointer; transition: all 0.15s; box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+  .start-btn:hover { background: var(--teal-700); transform: translateY(-1px); }
+  .start-btn svg { width: 16px; height: 16px; }
+
+  .settings { background: rgba(255,255,255,0.7); border: 1px solid var(--stone-200); border-radius: 12px; padding: 16px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
+  .settings-group { display: flex; align-items: center; gap: 12px; font-size: 14px; color: var(--stone-600); flex-wrap: wrap; }
   .settings-group label { font-weight: 500; }
   .button-group { display: flex; gap: 6px; flex-wrap: wrap; }
-
-  input[type="number"].sem-input {
-    width: 64px; padding: 6px 8px; text-align: center; background: white;
-    border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit;
-    font-size: 14px; color: var(--stone-800);
-  }
-  input[type="number"].sem-input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px var(--teal-100); }
+  input[type="number"].sem-input { width: 64px; padding: 6px 8px; text-align: center; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 14px; color: var(--stone-800); }
+  input[type="number"].sem-input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
   input[type="checkbox"] { accent-color: var(--teal-700); width: 16px; height: 16px; }
   .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; user-select: none; }
-
-  .btn {
-    display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px;
-    font-size: 13px; border-radius: 8px; font-family: inherit; cursor: pointer;
-    border: none; font-weight: 500; transition: all 0.15s; white-space: nowrap;
-  }
+  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 8px 12px; font-size: 13px; border-radius: 8px; font-family: inherit; cursor: pointer; border: none; font-weight: 500; transition: all 0.15s; white-space: nowrap; }
+  .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .btn-primary { background: var(--teal-700); color: white; }
+  .btn-primary:hover:not(:disabled) { background: var(--teal-800); transform: translateY(-1px); }
   .btn-secondary { background: white; color: var(--stone-700); border: 1px solid var(--stone-200); }
-  .btn-secondary:hover { background: var(--stone-50); }
-  .btn-warn { background: white; color: var(--amber-700); border: 1px solid var(--amber-200); }
-  .btn-warn:hover { background: var(--amber-50); }
+  .btn-secondary:hover:not(:disabled) { background: var(--stone-50); }
+  .btn-warn { background: white; color: #b45309; border: 1px solid var(--amber-200); }
+  .btn-warn:hover:not(:disabled) { background: var(--amber-50); }
+  .btn-undo { background: #b45309; color: white; border: 1px solid #b45309; }
+  .btn-undo:hover:not(:disabled) { background: #92400e; }
   .btn svg { width: 14px; height: 14px; }
 
-  /* Locked buttons */
-  .btn-locked {
-    background: var(--stone-50); color: var(--stone-400);
-    border: 1px dashed var(--stone-300); position: relative;
-  }
-  .btn-locked:hover { background: white; color: var(--stone-500); }
-  .btn-locked .lock { width: 13px; height: 13px; opacity: 0.8; }
-
-  /* ----- Theme picker ----- */
-  .theme-bar {
-    background: rgba(255, 255, 255, 0.7); backdrop-filter: blur(8px);
-    border: 1px solid var(--stone-200); border-radius: 12px; padding: 12px 16px;
-    margin-bottom: 24px; display: flex; align-items: center; gap: 14px;
-    flex-wrap: wrap; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
-  }
-  .theme-bar .theme-label { display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 500; color: var(--stone-600); }
-  .theme-bar .theme-label svg { width: 16px; height: 16px; color: var(--teal-700); }
-  .swatches { display: flex; gap: 8px; flex-wrap: wrap; }
-  .swatch {
-    width: 30px; height: 30px; border-radius: 9999px; border: 2px solid white;
-    cursor: pointer; padding: 0; box-shadow: 0 0 0 1px var(--stone-200), 0 1px 3px rgba(0,0,0,0.12);
-    transition: transform 0.15s, box-shadow 0.15s; position: relative;
-  }
-  .swatch:hover { transform: scale(1.12); }
-  .swatch.active { box-shadow: 0 0 0 2px var(--stone-800), 0 1px 3px rgba(0,0,0,0.15); transform: scale(1.08); }
-  .swatch.active::after {
-    content: ''; position: absolute; inset: 0; margin: auto; width: 9px; height: 9px;
-    border-radius: 50%; background: rgba(255,255,255,0.92);
-  }
-  .swatch-name { font-size: 13px; color: var(--stone-500); min-width: 76px; font-weight: 500; }
-
-  /* ----- Toast ----- */
-  .toast {
-    position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px);
-    background: var(--stone-900); color: white; padding: 12px 20px; border-radius: 10px;
-    font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000;
-    display: flex; align-items: center; gap: 8px; transition: transform 0.3s ease, opacity 0.3s ease;
-    opacity: 0; pointer-events: none;
-  }
+  .toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--stone-900); color: white; padding: 12px 20px; border-radius: 10px; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); z-index: 1000; display: flex; align-items: center; gap: 8px; transition: transform 0.3s ease, opacity 0.3s ease; opacity: 0; pointer-events: none; }
   .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+  .toast.success { background: var(--teal-700); }
+  .toast.error { background: #b91c1c; }
   .toast svg { width: 16px; height: 16px; }
 
-  /* ----- Categories ----- */
-  .category {
-    background: white; border-radius: 12px; border: 1px solid var(--stone-200);
-    overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
-  }
+  .category { background: white; border-radius: 12px; border: 1px solid var(--stone-200); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
   .category.income { border-color: var(--teal-200); }
-  .cat-header {
-    padding: 12px 20px; display: flex; align-items: center; gap: 12px;
-    background: linear-gradient(to right, var(--stone-50), var(--rose-50));
-    border-bottom: 1px solid var(--stone-100);
-  }
-  .category.income .cat-header { background: linear-gradient(to right, var(--teal-50), var(--teal-100)); border-bottom-color: var(--teal-100); }
-  .cat-icon {
-    width: 36px; height: 36px; border-radius: 8px; background: var(--stone-700);
-    color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-  }
+  .cat-header { padding: 12px 20px; display: flex; align-items: center; gap: 12px; background: linear-gradient(to right, var(--stone-50), var(--bg-tint-a)); border-bottom: 1px solid var(--stone-100); }
+  .category.income .cat-header { background: linear-gradient(to right, var(--teal-50), rgba(236,253,245,0.5)); border-bottom-color: var(--teal-100); }
+  .cat-icon { width: 36px; height: 36px; border-radius: 8px; background: var(--stone-700); color: white; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
   .category.income .cat-icon { background: var(--teal-700); }
   .cat-icon svg { width: 18px; height: 18px; stroke-width: 1.75; }
   .cat-title { font-family: 'Fraunces', Georgia, serif; font-size: 18px; color: var(--stone-800); font-weight: 500; }
-
-  .col-headers {
-    display: none; grid-template-columns: 5fr 3fr 3fr 1fr; gap: 12px; padding: 8px 20px;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-400);
-    font-weight: 500; border-bottom: 1px solid var(--stone-100);
-  }
+  .col-headers { display: none; grid-template-columns: 5fr 3fr 3fr 1fr; gap: 12px; padding: 8px 20px; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-400); font-weight: 500; border-bottom: 1px solid var(--stone-100); }
   @media (min-width: 768px) { .col-headers { display: grid; } }
   .col-headers .right { text-align: right; }
-
-  .row {
-    padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px;
-    align-items: center; border-bottom: 1px solid var(--stone-100); transition: background 0.15s;
-  }
+  .row { padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center; border-bottom: 1px solid var(--stone-100); transition: background 0.15s; }
   .row:last-child { border-bottom: none; }
-  .row:hover { background: var(--stone-50); }
+  .row:hover { background: rgba(250,250,249,0.5); }
   @media (min-width: 768px) { .row { grid-template-columns: 5fr 3fr 3fr 1fr; } }
   .row-label { font-size: 14px; color: var(--stone-700); }
   .input-cell { display: flex; align-items: center; gap: 8px; }
   .mobile-label { font-size: 11px; color: var(--stone-400); width: 96px; flex-shrink: 0; }
   @media (min-width: 768px) { .mobile-label { display: none; } }
-
   .currency-input { position: relative; flex: 1; min-width: 0; }
-  .currency-input::before {
-    content: "$"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
-    color: var(--stone-400); font-size: 14px; font-family: 'Fraunces', serif; pointer-events: none;
-  }
-  .currency-input input {
-    width: 100%; padding: 8px 12px 8px 28px; text-align: right; background: white;
-    border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 14px;
-    color: var(--stone-800); font-variant-numeric: tabular-nums;
-  }
-  .currency-input input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px var(--teal-100); }
+  .currency-input::before { content: "$"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--stone-400); font-size: 14px; font-family: 'Fraunces', serif; pointer-events: none; }
+  .currency-input input { width: 100%; padding: 8px 12px 8px 28px; text-align: right; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 14px; color: var(--stone-800); font-variant-numeric: tabular-nums; }
+  .currency-input input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
   .currency-input input::-webkit-outer-spin-button, .currency-input input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
   .currency-input input[type=number] { -moz-appearance: textfield; }
-
-  .calc-display {
-    flex: 1; padding: 8px 12px; text-align: right; background: var(--stone-50);
-    border: 1px solid var(--stone-100); border-radius: 6px; color: var(--stone-500);
-    font-size: 14px; font-variant-numeric: tabular-nums;
-  }
-
-  .subtotal {
-    padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px;
-    align-items: center; background: var(--stone-50); border-top: 1px solid var(--stone-100);
-  }
+  .calc-display { flex: 1; padding: 8px 12px; text-align: right; background: var(--stone-50); border: 1px solid var(--stone-100); border-radius: 6px; color: var(--stone-500); font-size: 14px; font-variant-numeric: tabular-nums; }
+  .subtotal { padding: 12px 20px; display: grid; grid-template-columns: 1fr; gap: 12px; align-items: center; background: var(--stone-50); border-top: 1px solid var(--stone-100); }
   @media (min-width: 768px) { .subtotal { grid-template-columns: 5fr 3fr 3fr 1fr; } }
-  .category.income .subtotal { background: var(--teal-50); border-top-color: var(--teal-100); }
+  .category.income .subtotal { background: rgba(240,253,250,0.5); border-top-color: var(--teal-100); }
   .subtotal-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-500); font-weight: 600; }
   .subtotal-value { text-align: right; font-size: 14px; font-weight: 600; color: var(--stone-800); font-variant-numeric: tabular-nums; }
 
-  /* ----- Locked categories teaser ----- */
-  .locked-card {
-    background: white; border: 1px dashed var(--stone-300); border-radius: 12px;
-    padding: 24px; margin-bottom: 16px; text-align: center;
-  }
-  .locked-card .lock-ico {
-    width: 44px; height: 44px; border-radius: 11px; margin: 0 auto 14px;
-    background: var(--teal-50); color: var(--teal-700); display: grid; place-items: center;
-  }
-  .locked-card .lock-ico svg { width: 22px; height: 22px; }
-  .locked-card h3 { font-family: 'Fraunces', serif; font-size: 19px; font-weight: 600; color: var(--stone-800); margin-bottom: 6px; }
-  .locked-card p { font-size: 14px; color: var(--stone-600); max-width: 40em; margin: 0 auto 16px; }
-  .locked-chips { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 20px; }
-  .locked-chip {
-    display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--stone-500);
-    background: var(--stone-50); border: 1px solid var(--stone-200); padding: 6px 13px; border-radius: 9999px;
-  }
-  .locked-chip svg { width: 12px; height: 12px; color: var(--stone-400); }
-  .unlock-btn {
-    display: inline-flex; align-items: center; gap: 9px; padding: 12px 22px;
-    background: var(--stone-900); color: white; border: none; border-radius: 11px;
-    font-family: inherit; font-size: 15px; font-weight: 600; text-decoration: none; cursor: pointer;
-    transition: transform 0.15s, background 0.15s, box-shadow 0.15s; box-shadow: 0 8px 20px -8px rgba(38,42,48,0.45);
-  }
-  .unlock-btn:hover { background: var(--teal-700); transform: translateY(-2px); box-shadow: 0 12px 24px -8px rgba(90,120,173,0.5); }
-  .unlock-btn .tag { background: rgba(255,255,255,0.16); padding: 3px 9px; border-radius: 7px; font-variant-numeric: tabular-nums; }
-
-  /* ----- Summary ----- */
-  .summary {
-    background: var(--summary-grad); color: white; border-radius: 16px; padding: 24px;
-    box-shadow: 0 20px 35px -10px rgba(38, 42, 48, 0.35); position: relative; overflow: hidden;
-    transition: background 0.4s ease;
-  }
+  .summary { background: var(--stone-900); color: white; border-radius: 16px; padding: 24px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
   @media (min-width: 768px) { .summary { padding: 32px; } }
   .summary::before, .summary::after { content: ''; position: absolute; width: 256px; height: 256px; border-radius: 50%; filter: blur(48px); pointer-events: none; }
-  .summary::before { top: -80px; right: -80px; background: var(--blob-1); }
-  .summary::after { bottom: -80px; left: -80px; background: var(--blob-2); }
+  .summary::before { top: -80px; right: -80px; background: var(--glow-a); }
+  .summary::after { bottom: -80px; left: -80px; background: var(--glow-b); }
   .summary-content { position: relative; }
   .summary h2 { font-family: 'Fraunces', Georgia, serif; font-size: 28px; margin-bottom: 4px; font-weight: 500; }
-  .summary-sub { color: rgba(255,255,255,0.7); font-size: 14px; margin-bottom: 24px; }
+  .summary-sub { color: var(--stone-400); font-size: 14px; margin-bottom: 24px; }
   .summary-grid { display: grid; grid-template-columns: 1fr; gap: 16px; }
   @media (min-width: 768px) { .summary-grid { grid-template-columns: 1fr 1fr 1fr; } }
-  .stat-card { background: rgba(255, 255, 255, 0.08); backdrop-filter: blur(8px); border-radius: 12px; padding: 20px; border: 1px solid rgba(255, 255, 255, 0.12); }
-  .stat-card.surplus { background: color-mix(in srgb, var(--teal-300) 22%, transparent); border-color: color-mix(in srgb, var(--teal-300) 45%, transparent); }
-  .stat-card.shortfall { background: color-mix(in srgb, var(--rose-500) 22%, transparent); border-color: color-mix(in srgb, var(--rose-500) 45%, transparent); }
-  .stat-label { display: flex; align-items: center; gap: 8px; color: rgba(255,255,255,0.65); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
+  .stat-card { background: rgba(255,255,255,0.05); border-radius: 12px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
+  .stat-card.surplus { background: rgba(90,120,173,0.18); border-color: rgba(90,120,173,0.42); }
+  .stat-card.shortfall { background: rgba(244,63,94,0.1); border-color: rgba(244,63,94,0.3); }
+  .stat-label { display: flex; align-items: center; gap: 8px; color: var(--stone-400); font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px; }
   .stat-label svg { width: 14px; height: 14px; }
-  .stat-card.surplus .stat-label, .stat-card.shortfall .stat-label { color: rgba(255,255,255,0.85); }
+  .stat-card.surplus .stat-label, .stat-card.shortfall .stat-label { color: var(--stone-300); }
   .stat-value { font-family: 'Fraunces', Georgia, serif; font-size: 28px; font-weight: 500; font-variant-numeric: tabular-nums; }
   @media (min-width: 768px) { .stat-value { font-size: 32px; } }
   .stat-card.surplus .stat-value { color: var(--teal-300); }
   .stat-card.shortfall .stat-value { color: var(--rose-300); }
-  .stat-sub { font-size: 12px; color: rgba(255,255,255,0.55); margin-top: 4px; font-variant-numeric: tabular-nums; }
-  .summary-note {
-    position: relative; margin-top: 22px; font-size: 12.5px; color: rgba(255,255,255,0.72);
-    display: flex; align-items: center; gap: 8px; padding-top: 18px; border-top: 1px solid rgba(255,255,255,0.14);
-  }
-  .summary-note svg { width: 15px; height: 15px; flex-shrink: 0; }
-  .summary-note a { color: white; font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
-
-  .page-footer { text-align: center; margin-top: 32px; font-size: 12px; color: var(--stone-600); }
-  .page-footer a { color: var(--teal-800); text-decoration: none; font-weight: 500; }
-  .page-footer a:hover { text-decoration: underline; }
-
+  .stat-sub { font-size: 12px; color: var(--stone-500); margin-top: 4px; font-variant-numeric: tabular-nums; }
+  .progress-section { margin-top: 24px; }
+  .progress-header { display: flex; justify-content: space-between; font-size: 12px; color: var(--stone-400); margin-bottom: 8px; }
+  .progress-bar { height: 8px; background: rgba(255,255,255,0.1); border-radius: 9999px; overflow: hidden; }
+  .progress-fill { height: 100%; border-radius: 9999px; transition: width 0.5s ease; }
+  .progress-fill.good { background: linear-gradient(to right, var(--teal-300), var(--teal-600)); }
+  .progress-fill.bad { background: linear-gradient(to right, var(--rose-300), var(--amber-400)); }
+  .page-footer { text-align: center; margin-top: 32px; font-size: 12px; color: var(--stone-400); }
   input[type=number] { -moz-appearance: textfield; }
-  :focus-visible { outline: 2px solid var(--teal-700); outline-offset: 2px; border-radius: 6px; }
+  #loadFileInput { display: none; }
+
+  /* ============ DEMO BANNER ============ */
+  .demo-banner { position: sticky; top: 0; z-index: 200; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 8px 16px; padding: 10px 16px; background: var(--teal-700); color: #fff; font-size: 13.5px; box-shadow: 0 2px 10px rgba(0,0,0,0.12); }
+  .demo-banner strong { font-weight: 600; letter-spacing: 0.02em; }
+  .demo-banner .demo-text { opacity: 0.95; }
+  .demo-banner .demo-buy { display: inline-flex; align-items: center; gap: 6px; background: #fff; color: var(--teal-800); text-decoration: none; font-weight: 600; font-size: 13px; padding: 6px 14px; border-radius: 8px; transition: transform .15s ease, background .15s ease; }
+  .demo-banner .demo-buy:hover { transform: translateY(-1px); background: var(--teal-50); }
+  .demo-banner .demo-buy svg { width: 14px; height: 14px; }
+  .btn .lock { width: 12px; height: 12px; opacity: 0.75; }
+
+  /* ============ FINANCIAL AID TAB ============ */
+  .aid-intro { background: white; border-radius: 16px; border: 1px solid var(--stone-200); padding: 24px; margin-bottom: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .aid-intro h2 { font-family: 'Fraunces', Georgia, serif; font-size: 24px; font-weight: 500; margin-bottom: 8px; color: var(--stone-800); }
+  .aid-intro h2 em { color: var(--teal-700); font-style: italic; }
+  .aid-intro p { color: var(--stone-600); font-size: 14px; line-height: 1.6; }
+
+  .aid-stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
+  @media (min-width: 640px) { .aid-stats { grid-template-columns: repeat(4, 1fr); } }
+  .aid-stat { background: white; border-radius: 12px; border: 1px solid var(--stone-200); padding: 16px; }
+  .aid-stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-500); font-weight: 500; margin-bottom: 6px; }
+  .aid-stat-value { font-family: 'Fraunces', Georgia, serif; font-size: 22px; color: var(--stone-800); font-weight: 500; font-variant-numeric: tabular-nums; }
+  .aid-stat.applied .aid-stat-value { color: var(--stone-700); }
+  .aid-stat.pending .aid-stat-value { color: var(--amber-600); }
+  .aid-stat.awarded .aid-stat-value { color: var(--teal-700); }
+  .aid-stat.denied .aid-stat-value { color: var(--stone-400); }
+
+  .aid-filters { background: rgba(255,255,255,0.7); border: 1px solid var(--stone-200); border-radius: 12px; padding: 12px 16px; margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: center; gap: 12px; justify-content: space-between; }
+  .filter-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .filter-group label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-500); font-weight: 500; }
+  .filter-select { padding: 6px 28px 6px 10px; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 13px; color: var(--stone-800); cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+  .filter-select:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
+
+  .aid-section { background: white; border-radius: 12px; border: 1px solid var(--stone-200); overflow: hidden; margin-bottom: 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+  .aid-section-header { padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; background: linear-gradient(to right, var(--stone-50), var(--bg-tint-a)); border-bottom: 1px solid var(--stone-100); flex-wrap: wrap; gap: 8px; }
+  .aid-section-header.starter { background: linear-gradient(to right, var(--teal-50), rgba(236,253,245,0.5)); border-bottom-color: var(--teal-100); }
+  .aid-section-title { font-family: 'Fraunces', Georgia, serif; font-size: 18px; color: var(--stone-800); font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .aid-section-title svg { width: 18px; height: 18px; color: var(--stone-700); }
+  .aid-section-header.starter .aid-section-title svg { color: var(--teal-700); }
+  .aid-count { font-size: 12px; color: var(--stone-500); }
+
+  .scholarship-list { padding: 8px; }
+  .scholarship-row { display: grid; grid-template-columns: 1fr; gap: 8px; padding: 12px; border-radius: 8px; transition: background 0.15s; border: 1px solid transparent; margin-bottom: 4px; }
+  @media (min-width: 768px) { .scholarship-row { grid-template-columns: 3fr 1.3fr 1.5fr auto; gap: 12px; align-items: center; } }
+  .scholarship-row:hover { background: var(--stone-50); border-color: var(--stone-100); }
+  .scholarship-row.added { background: var(--teal-50); border-color: var(--teal-200); }
+
+  .sch-name { font-size: 14px; color: var(--stone-800); font-weight: 500; }
+  .sch-name-input { width: 100%; padding: 6px 10px; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 14px; color: var(--stone-800); }
+  .sch-name-input:focus { outline: none; border-color: var(--teal-700); box-shadow: 0 0 0 3px rgba(13,148,136,0.15); }
+
+  .sch-meta { font-size: 12px; color: var(--stone-500); margin-top: 2px; }
+
+  .sch-amount { display: flex; align-items: center; gap: 4px; }
+  .mobile-tag { font-size: 11px; color: var(--stone-400); text-transform: uppercase; letter-spacing: 0.08em; width: 70px; flex-shrink: 0; }
+  @media (min-width: 768px) { .mobile-tag { display: none; } }
+
+  .sch-amount-wrap { position: relative; flex: 1; }
+  .sch-amount-wrap::before { content: "$"; position: absolute; left: 8px; top: 50%; transform: translateY(-50%); color: var(--stone-400); font-size: 12px; pointer-events: none; z-index: 1; }
+  .sch-amount input { width: 100%; padding: 6px 10px 6px 22px; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 13px; color: var(--stone-800); text-align: right; font-variant-numeric: tabular-nums; }
+
+  .sch-status-wrap { position: relative; flex: 1; }
+  .sch-status { width: 100%; padding: 6px 28px 6px 10px; background: white; border: 1px solid var(--stone-200); border-radius: 6px; font-family: inherit; font-size: 13px; cursor: pointer; appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 8px center; }
+
+  .sch-status.status-not-started { color: var(--stone-600); border-color: var(--stone-200); }
+  .sch-status.status-in-progress { color: var(--blue-600); border-color: var(--blue-200); background-color: var(--blue-50); }
+  .sch-status.status-submitted { color: var(--amber-700); border-color: var(--amber-200); background-color: var(--amber-50); }
+  .sch-status.status-awarded { color: var(--teal-700); border-color: var(--teal-200); background-color: var(--teal-50); font-weight: 600; }
+  .sch-status.status-denied { color: var(--stone-400); border-color: var(--stone-200); background-color: var(--gray-50); }
+
+  .sch-actions { display: flex; gap: 4px; justify-content: flex-end; }
+  .icon-btn { width: 30px; height: 30px; border-radius: 6px; background: transparent; border: 1px solid var(--stone-200); color: var(--stone-500); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s; }
+  .icon-btn:hover { background: var(--stone-50); color: var(--stone-700); }
+  .icon-btn.add { background: var(--teal-700); color: white; border-color: var(--teal-700); padding: 0 10px; width: auto; font-size: 12px; font-weight: 500; gap: 4px; }
+  .icon-btn.add:hover { background: var(--teal-800); }
+  .icon-btn.delete:hover { background: var(--rose-50); color: var(--rose-500); border-color: var(--rose-300); }
+  .icon-btn svg { width: 14px; height: 14px; }
+  .icon-btn.added-state { background: var(--teal-50); color: var(--teal-700); border-color: var(--teal-200); width: auto; padding: 0 10px; font-size: 12px; gap: 4px; cursor: default; }
+
+  .add-row { padding: 14px 20px; background: var(--stone-50); border-top: 1px solid var(--stone-100); display: flex; gap: 8px; align-items: center; }
+  .add-row button { background: white; color: var(--teal-700); border: 1px dashed var(--teal-300); padding: 10px 16px; border-radius: 8px; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 500; width: 100%; transition: all 0.15s; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
+  .add-row button:hover { background: var(--teal-50); border-style: solid; border-color: var(--teal-700); }
+  .add-row svg { width: 14px; height: 14px; }
+
+  .empty-state { padding: 32px 20px; text-align: center; color: var(--stone-500); font-size: 13px; }
+  .empty-state svg { width: 32px; height: 32px; color: var(--stone-300); margin-bottom: 8px; }
+  .empty-state p { margin-bottom: 4px; }
+
+  .scholarship-list-headers { display: none; grid-template-columns: 3fr 1.3fr 1.5fr auto; gap: 12px; padding: 8px 20px; font-size: 10px; text-transform: uppercase; letter-spacing: 0.1em; color: var(--stone-400); font-weight: 500; border-bottom: 1px solid var(--stone-100); background: rgba(250,250,249,0.5); }
+  @media (min-width: 768px) { .scholarship-list-headers { display: grid; } }
+  .scholarship-list-headers .right { text-align: right; padding-right: 60px; }
+
+  .external-link { color: var(--teal-700); text-decoration: none; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+  .external-link:hover { text-decoration: underline; }
+  .external-link svg { width: 11px; height: 11px; }
 </style>
 </head>
 <body>
+<div class="demo-banner">
+  <span class="demo-text"><strong>You're using the demo.</strong> Excel export, saving, and the full scholarship list are unlocked in the full planner.</span>
+  <a class="demo-buy" href="https://payhip.com/b/kHBuE" target="_blank" rel="noopener">
+    Get the full planner — $19.99
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+  </a>
+</div>
 <div class="container">
-
-  <!-- DEMO BANNER -->
-  <div class="demo-banner">
-    <div class="demo-banner-text">
-      <span class="demo-pill">Live Demo</span>
-      <p>You're trying the planner. <strong>Three categories are unlocked</strong> — the full version has all eight, plus Excel export and save.</p>
-    </div>
-    <a class="demo-unlock" id="bannerUnlock" href="index.html#pricing">
-      Unlock everything <span class="tag">$12.99</span>
-    </a>
-  </div>
-
   <header class="page-head">
     <div class="badge">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
       <span>For Future Nurses</span>
     </div>
     <h1 class="title">Nursing School <em>Budget Planner</em></h1>
-    <p class="subtitle">Type in a few numbers and watch the bottom line update. This is exactly how the full planner works.</p>
+    <p class="subtitle">Track tuition, expenses, and financial aid — all in one place.</p>
   </header>
 
-  <div class="settings">
-    <div class="settings-group">
-      <label for="semesters">Semesters:</label>
-      <input type="number" id="semesters" class="sem-input" min="1" max="12" value="4" />
-      <label class="checkbox-label">
-        <input type="checkbox" id="autoTotal" checked />
-        Auto-calc totals
-      </label>
-    </div>
-    <div class="button-group">
-      <button class="btn btn-locked" id="exportBtn" title="Available in the full version">
-        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Export to Excel
-      </button>
-      <button class="btn btn-locked" id="saveBtn" title="Available in the full version">
-        <svg class="lock" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-        Save
-      </button>
-      <button class="btn btn-warn" id="clearBtn" title="Clear all entries">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
-        Clear
-      </button>
+  <div class="tabs">
+    <button class="tab" data-tab="instructions">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+      Instructions
+    </button>
+    <button class="tab active" data-tab="planner">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>
+      Budget
+    </button>
+    <button class="tab" data-tab="aid">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      Financial Aid
+    </button>
+  </div>
+
+  <!-- COLOR THEME PICKER -->
+  <div class="theme-picker">
+    <span class="theme-picker-label">Color theme</span>
+    <div class="theme-swatches" id="themeSwatches" role="group" aria-label="Color theme"></div>
+  </div>
+
+  <!-- INSTRUCTIONS PANEL -->
+  <div class="tab-panel" id="panel-instructions">
+    <div class="instructions-card">
+      <div class="instructions-intro">
+        Nursing school is an investment in yourself. This planner helps you see the full picture — money in, money out, and every scholarship you're chasing — so the financial side feels less scary and more like something you've already thought through.
+      </div>
+      <ol class="step-list">
+        <li><div class="step-content"><h3>Set your program length</h3><p>On the <strong>Budget</strong> tab, enter how many semesters your program is. Totals will scale automatically.</p></div></li>
+        <li><div class="step-content"><h3>Estimate costs by category</h3><p>Work through each section: Tuition, Books, Clinical, Equipment, Transportation, Living, and Personal. For each line item, type the cost <strong>per semester</strong>.</p></div></li>
+        <li><div class="step-content"><h3>Add your income &amp; financial aid</h3><p>List every source: savings, family, job, scholarships, grants, and student loans. The summary panel updates live.</p></div></li>
+        <li><div class="step-content"><h3>Track scholarships separately</h3><p>Switch to the <strong>Financial Aid</strong> tab to track individual scholarship and grant applications. The included starter list has 20+ real nursing scholarships you can add with one click.</p></div></li>
+        <li><div class="step-content"><h3>Update status as you go</h3><p>For each scholarship, set the status: <em>Not Started → In Progress → Submitted → Awarded</em> (or Denied). The stats at the top show your totals at a glance.</p></div></li>
+        <li><div class="step-content"><h3>Filter to stay focused</h3><p>Use the filters to see only what's pending, what you've submitted, or what you've already won.</p></div></li>
+        <li><div class="step-content"><h3>Save, load, and export</h3><p>Save a <code>.json</code> backup, load a previous session, or export everything to Excel for sharing with family or a financial aid advisor.</p></div></li>
+        <li><div class="step-content"><h3>Revisit as you go</h3><p>Numbers change — tuition increases, scholarships come through, you find a roommate. The best plan is one you keep updating.</p></div></li>
+      </ol>
+      <div class="tip-box"><p><strong>Pro tip:</strong> Apply to scholarships you think you "probably won't get." The smaller, niche scholarships have fewer applicants — your odds are better than you think. Try to apply to 2-3 per month, and always check each scholarship's official website for current deadlines and requirements.</p></div>
+      <div class="start-btn-wrap">
+        <button class="start-btn" id="goToPlanner">Start Planning
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+      </div>
     </div>
   </div>
 
-  <!-- THEME PICKER -->
-  <div class="theme-bar">
-    <span class="theme-label">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.926 0 1.648-.746 1.648-1.688 0-.437-.18-.835-.437-1.125-.29-.289-.438-.652-.438-1.125a1.64 1.64 0 0 1 1.668-1.668h1.996c3.051 0 5.555-2.503 5.555-5.554C21.965 6.012 17.461 2 12 2z"/></svg>
-      Color theme
-    </span>
-    <div class="swatches" id="swatches"></div>
-    <span class="swatch-name" id="themeName">Periwinkle</span>
-  </div>
-
-  <div id="categoriesContainer"></div>
-
-  <!-- LOCKED CATEGORIES TEASER -->
-  <div class="locked-card">
-    <div class="lock-ico">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+  <!-- BUDGET PLANNER PANEL -->
+  <div class="tab-panel active" id="panel-planner">
+    <div class="settings">
+      <div class="settings-group">
+        <label for="semesters">Semesters:</label>
+        <input type="number" id="semesters" class="sem-input" min="1" max="12" value="4" />
+        <label class="checkbox-label"><input type="checkbox" id="autoTotal" checked /> Auto-calc totals</label>
+      </div>
+      <div class="button-group">
+        <button type="button" class="btn btn-primary" id="exportBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="9" y1="13" x2="15" y2="19"/><line x1="15" y1="13" x2="9" y2="19"/></svg><span>Export to Excel</span></button>
+        <button type="button" class="btn btn-secondary" id="saveBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg><span>Save</span></button>
+        <button type="button" class="btn btn-secondary" id="loadBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg><span>Load</span></button>
+        <input type="file" id="loadFileInput" accept=".json,application/json" />
+        <button type="button" class="btn btn-warn" id="clearBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg><span id="clearBtnLabel">Clear</span></button>
+      </div>
     </div>
-    <h3>Five more categories in the full planner</h3>
-    <p>The complete version adds every cost nursing students actually face — so nothing sneaks up on you mid-program.</p>
-    <div class="locked-chips" id="lockedChips"></div>
-    <a class="unlock-btn" id="teaserUnlock" href="index.html#pricing">
-      Unlock the full planner <span class="tag">$12.99</span>
-    </a>
-  </div>
-
-  <section class="summary">
-    <div class="summary-content">
-      <h2>The Bottom Line</h2>
-      <p class="summary-sub">Based on the categories in this demo.</p>
-      <div class="summary-grid">
-        <div class="stat-card">
-          <div class="stat-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg>
-            Total Expenses
+    <div id="categoriesContainer"></div>
+    <section class="summary">
+      <div class="summary-content">
+        <h2>The Bottom Line</h2>
+        <p class="summary-sub">A snapshot of where you stand.</p>
+        <div class="summary-grid">
+          <div class="stat-card">
+            <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 18 13.5 8.5 8.5 13.5 1 6"/><polyline points="17 18 23 18 23 12"/></svg> Total Expenses</div>
+            <div class="stat-value" id="totalExpenses">$0</div>
+            <div class="stat-sub" id="totalExpensesSem">$0 per semester</div>
           </div>
-          <div class="stat-value" id="totalExpenses">$0</div>
-          <div class="stat-sub" id="totalExpensesSem">$0 per semester</div>
+          <div class="stat-card">
+            <div class="stat-label"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg> Total Income</div>
+            <div class="stat-value" id="totalIncome">$0</div>
+            <div class="stat-sub" id="totalIncomeSem">$0 per semester</div>
+          </div>
+          <div class="stat-card surplus" id="diffCard">
+            <div class="stat-label"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg> <span id="diffLabel">Surplus</span></div>
+            <div class="stat-value" id="diffValue">$0</div>
+            <div class="stat-sub" id="diffSub">$0 per semester</div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-label">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
-            Total Income
-          </div>
-          <div class="stat-value" id="totalIncome">$0</div>
-          <div class="stat-sub" id="totalIncomeSem">$0 per semester</div>
-        </div>
-        <div class="stat-card surplus" id="diffCard">
-          <div class="stat-label">
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z"/></svg>
-            <span id="diffLabel">Surplus</span>
-          </div>
-          <div class="stat-value" id="diffValue">$0</div>
-          <div class="stat-sub" id="diffSub">$0 per semester</div>
+        <div class="progress-section" id="progressSection" style="display:none;">
+          <div class="progress-header"><span>Income coverage</span><span id="coveragePercent">0%</span></div>
+          <div class="progress-bar"><div class="progress-fill good" id="progressFill" style="width:0%"></div></div>
         </div>
       </div>
-      <p class="summary-note">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-        This demo only adds up the unlocked categories. The full version totals all eight and exports to Excel. <a href="index.html#pricing">Get it for $12.99 →</a>
-      </p>
-    </div>
-  </section>
+    </section>
+    <p class="page-footer">Data stays in your browser unless you save or export.</p>
+  </div>
 
-  <p class="page-footer">This is a free demo of the Nursing School Budget Planner. &nbsp;·&nbsp; <a href="index.html">Back to home</a></p>
+  <!-- FINANCIAL AID PANEL -->
+  <div class="tab-panel" id="panel-aid">
+    <div class="aid-intro">
+      <h2>Financial Aid <em>Tracker</em></h2>
+      <p>Track every scholarship and grant you're pursuing. We've included a starter list of real nursing scholarships — click "Add" on any of them to copy it into your tracker, then update the status as you apply. Apply broadly: small awards add up. <em>Always check each scholarship's official website for current deadlines and requirements.</em></p>
+    </div>
+
+    <div class="aid-stats">
+      <div class="aid-stat applied">
+        <div class="aid-stat-label">Total Applied</div>
+        <div class="aid-stat-value" id="statApplied">$0</div>
+      </div>
+      <div class="aid-stat pending">
+        <div class="aid-stat-label">Pending</div>
+        <div class="aid-stat-value" id="statPending">$0</div>
+      </div>
+      <div class="aid-stat awarded">
+        <div class="aid-stat-label">Awarded</div>
+        <div class="aid-stat-value" id="statAwarded">$0</div>
+      </div>
+      <div class="aid-stat denied">
+        <div class="aid-stat-label">Denied</div>
+        <div class="aid-stat-value" id="statDenied">$0</div>
+      </div>
+    </div>
+
+    <div class="aid-filters">
+      <div class="filter-group">
+        <label for="filterStatus">Status:</label>
+        <select id="filterStatus" class="filter-select">
+          <option value="all">All</option>
+          <option value="not-started">Not Started</option>
+          <option value="in-progress">In Progress</option>
+          <option value="submitted">Submitted</option>
+          <option value="awarded">Awarded</option>
+          <option value="denied">Denied</option>
+        </select>
+      </div>
+      <div class="filter-group">
+        <label for="sortBy">Sort:</label>
+        <select id="sortBy" class="filter-select">
+          <option value="amount">By amount (highest)</option>
+          <option value="name">By name (A-Z)</option>
+          <option value="status">By status</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="aid-section">
+      <div class="aid-section-header">
+        <div class="aid-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11H5a2 2 0 0 0-2 2v3a2 2 0 0 0 2 2h4M9 11V7a3 3 0 0 1 6 0v4M9 11h6m0 0h4a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2h-4"/></svg>
+          My Scholarships
+        </div>
+        <span class="aid-count" id="myScholarshipsCount">0 scholarships</span>
+      </div>
+      <div class="scholarship-list-headers">
+        <div>Scholarship</div>
+        <div>Amount</div>
+        <div>Status</div>
+        <div class="right">Actions</div>
+      </div>
+      <div class="scholarship-list" id="myScholarshipsList"></div>
+      <div class="add-row">
+        <button type="button" id="addCustomBtn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Add a custom scholarship
+        </button>
+      </div>
+    </div>
+
+    <div class="aid-section">
+      <div class="aid-section-header starter">
+        <div class="aid-section-title">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L15.09 8.26 22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          Starter List: Nursing Scholarships
+        </div>
+        <span class="aid-count">Sample list — the full planner includes 20+</span>
+      </div>
+      <div class="scholarship-list" id="starterScholarshipsList"></div>
+    </div>
+
+    <p class="page-footer">
+      Amounts and eligibility vary year to year — always verify on the scholarship's official website.
+      <br/>Data stays in your browser unless you save or export.
+    </p>
+  </div>
 </div>
 
-<!-- Toast -->
 <div class="toast" id="toast">
-  <svg id="toastIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
-  <span id="toastMsg"></span>
+  <svg id="toastIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+  <span id="toastMsg">Saved!</span>
 </div>
 
 <script>
-  // ---- Checkout wiring (matches index.html) ----
-  const CHECKOUT_URL = ""; // paste your Stripe Payment Link to send "unlock" clicks to checkout
-  const UNLOCK_HREF = CHECKOUT_URL || "index.html#pricing";
+const ICONS = {
+  grad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
+  book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
+  steth: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4.8 2.3A.3.3 0 1 0 5 2H4a2 2 0 0 0-2 2v5a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6V4a2 2 0 0 0-2-2h-1a.2.2 0 1 0 .3.3"/><path d="M8 15v1a6 6 0 0 0 6 6v0a6 6 0 0 0 6-6v-4"/><circle cx="20" cy="10" r="2"/></svg>',
+  brief: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>',
+  car: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M14 16H9m10 0h3v-3.15a1 1 0 0 0-.84-.99L16 11l-2.7-3.6a1 1 0 0 0-.8-.4H5.24a2 2 0 0 0-1.8 1.1l-.8 1.63A6 6 0 0 0 2 12.42V16h2"/><circle cx="6.5" cy="16.5" r="2.5"/><circle cx="16.5" cy="16.5" r="2.5"/></svg>',
+  home: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>',
+  sparkle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2z"/></svg>',
+  wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>',
+};
 
-  // ---- Icons ----
-  const ICONS = {
-    grad: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>',
-    book: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>',
-    wallet: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4z"/></svg>',
-  };
+const CATEGORIES = [
+  { id: 'tuition', name: 'Tuition & School Fees', icon: ICONS.grad, type: 'expense', items: [{id:'tuition',label:'Tuition'},{id:'registration',label:'Registration Fees'},{id:'lab_fees',label:'Lab Fees'}]},
+  { id: 'books', name: 'Books & Supplies', icon: ICONS.book, type: 'expense', items: [{id:'textbooks',label:'Textbooks'},{id:'online_access',label:'Online Access'},{id:'laptop',label:'Laptop'},{id:'printing',label:'Printing'}]},
+  { id: 'clinical', name: 'Clinical Requirements', icon: ICONS.steth, type: 'expense', items: [{id:'background_check',label:'Background Check'},{id:'drug_screen',label:'Drug Screen / Physical'},{id:'immunizations',label:'Immunizations'},{id:'cpr',label:'CPR Certification'}]},
+  { id: 'equipment', name: 'Equipment', icon: ICONS.brief, type: 'expense', items: [{id:'scrubs',label:'Scrubs (2 sets)'},{id:'stethoscope',label:'Stethoscope'},{id:'watch',label:'Watch (with seconds hand)'},{id:'shoes',label:'Shoes'},{id:'nursing_kit',label:'Nursing Kit (penlight, scissors, etc.)'}]},
+  { id: 'transport', name: 'Transportation', icon: ICONS.car, type: 'expense', items: [{id:'gas',label:'Gas / Public Transportation'},{id:'parking',label:'Parking Fees'},{id:'maintenance',label:'Vehicle Maintenance'}]},
+  { id: 'living', name: 'Living Expenses', icon: ICONS.home, type: 'expense', items: [{id:'rent',label:'Rent'},{id:'utilities',label:'Utilities'},{id:'groceries',label:'Groceries'},{id:'phone',label:'Phone / Internet'},{id:'insurance',label:'Insurance'}]},
+  { id: 'personal', name: 'Personal & Misc.', icon: ICONS.sparkle, type: 'expense', items: [{id:'clothing',label:'Clothing'},{id:'subscriptions',label:'Subscriptions'},{id:'emergency',label:'Emergency Fund'},{id:'selfcare',label:'Self-Care / Leisure'}]},
+  { id: 'income', name: 'Income & Financial Aid', icon: ICONS.wallet, type: 'income', items: [{id:'savings',label:'Savings'},{id:'family',label:'Family Support'},{id:'job',label:'Part-time Job'},{id:'scholarships',label:'Scholarships'},{id:'grants',label:'Grants'},{id:'loans',label:'Student Loans'}]},
+];
 
-  // ---- Themes (same palette as full planner) ----
-  const THEMES = {
-    seafoam: { name: 'Seafoam', swatch: '#9ec9c4', vars: {
-      '--teal-50':'#eef6f5','--teal-100':'#ddeceb','--teal-200':'#c4dedb','--teal-300':'#9ec9c4','--teal-600':'#6fa39d','--teal-700':'#5d918b','--teal-800':'#4d7975',
-      '--rose-50':'#fbf2f0','--rose-300':'#f0c6bd','--rose-500':'#dba89c','--emerald-400':'#9ec9c4',
-      '--bg-grad':'linear-gradient(160deg,#eaf4f2 0%,#d6ebe7 55%,#c6e1dd 100%)',
-      '--summary-grad':'linear-gradient(160deg,#456f6b 0%,#3b5f5c 50%,#41706b 100%)',
-      '--blob-1':'rgba(158,201,196,0.30)','--blob-2':'rgba(219,168,156,0.22)'
-    }},
-    lavender: { name: 'Lavender', swatch: '#bda9d6', vars: {
-      '--teal-50':'#f3f0f8','--teal-100':'#e8e1f1','--teal-200':'#d7cbe7','--teal-300':'#bda9d6','--teal-600':'#9075b2','--teal-700':'#7d62a1','--teal-800':'#69508e',
-      '--rose-50':'#fbf3ee','--rose-300':'#f0cdb4','--rose-500':'#dba98a','--emerald-400':'#bda9d6',
-      '--bg-grad':'linear-gradient(160deg,#efe9f6 0%,#e0d4ee 55%,#d2c3e6 100%)',
-      '--summary-grad':'linear-gradient(160deg,#574580 0%,#4c3b6f 50%,#574a82 100%)',
-      '--blob-1':'rgba(189,169,214,0.32)','--blob-2':'rgba(219,169,138,0.22)'
-    }},
-    blush: { name: 'Blush', swatch: '#e1aab2', vars: {
-      '--teal-50':'#fbf1f3','--teal-100':'#f6e4e7','--teal-200':'#efd1d6','--teal-300':'#e1aab2','--teal-600':'#bf7e87','--teal-700':'#ac6a74','--teal-800':'#955762',
-      '--rose-50':'#f1f4ef','--rose-300':'#bdd0b4','--rose-500':'#97b58c','--emerald-400':'#e1aab2',
-      '--bg-grad':'linear-gradient(160deg,#f8eef0 0%,#f1dde1 55%,#ebccd2 100%)',
-      '--summary-grad':'linear-gradient(160deg,#7a4e57 0%,#693f49 50%,#5e3a44 100%)',
-      '--blob-1':'rgba(225,170,178,0.32)','--blob-2':'rgba(151,181,140,0.22)'
-    }},
-    sage: { name: 'Sage', swatch: '#a9c49b', vars: {
-      '--teal-50':'#f0f4ee','--teal-100':'#e2eadd','--teal-200':'#cddcc4','--teal-300':'#a9c49b','--teal-600':'#7a9b6b','--teal-700':'#688a59','--teal-800':'#577449',
-      '--rose-50':'#faf2ee','--rose-300':'#e6bda6','--rose-500':'#cf9b81','--emerald-400':'#a9c49b',
-      '--bg-grad':'linear-gradient(160deg,#eaf1e6 0%,#d8e6d0 55%,#c8dabd 100%)',
-      '--summary-grad':'linear-gradient(160deg,#4e6b42 0%,#425b38 50%,#48663c 100%)',
-      '--blob-1':'rgba(169,196,155,0.30)','--blob-2':'rgba(207,155,129,0.22)'
-    }},
-    apricot: { name: 'Apricot', swatch: '#e3b48a', vars: {
-      '--teal-50':'#fbf3ed','--teal-100':'#f6e7da','--teal-200':'#efd4bd','--teal-300':'#e3b48a','--teal-600':'#c08a5c','--teal-700':'#ad774a','--teal-800':'#96633b',
-      '--rose-50':'#eef6f5','--rose-300':'#a8d0cb','--rose-500':'#7fb0aa','--emerald-400':'#e3b48a',
-      '--bg-grad':'linear-gradient(160deg,#fbefe4 0%,#f3ddc8 55%,#ecceb0 100%)',
-      '--summary-grad':'linear-gradient(160deg,#7a5638 0%,#69472d 50%,#5e4029 100%)',
-      '--blob-1':'rgba(227,180,138,0.32)','--blob-2':'rgba(127,176,170,0.22)'
-    }},
-    periwinkle: { name: 'Periwinkle', swatch: '#9bb4dd', vars: {
-      '--teal-50':'#eff3fa','--teal-100':'#dee7f4','--teal-200':'#c5d5ec','--teal-300':'#9bb4dd','--teal-600':'#6c8bc0','--teal-700':'#5a78ad','--teal-800':'#4b6694',
-      '--rose-50':'#fbf2f0','--rose-300':'#f0c4bb','--rose-500':'#dba398','--emerald-400':'#9bb4dd',
-      '--bg-grad':'linear-gradient(160deg,#e9eff8 0%,#d4e0f1 55%,#c2d3ea 100%)',
-      '--summary-grad':'linear-gradient(160deg,#3f5585 0%,#354873 50%,#3b5080 100%)',
-      '--blob-1':'rgba(155,180,221,0.32)','--blob-2':'rgba(219,163,152,0.22)'
-    }},
-  };
-  let currentTheme = 'periwinkle';
+// Starter scholarships — no deadlines, evergreen
+// Demo shows a small sample. The full planner includes 20+ nursing scholarships.
+const STARTER_SCHOLARSHIPS = [
+  { id: 'nsna-promise', name: 'NSNA Promise of Nursing Scholarship', amount: 2500, url: 'https://www.nsna.org' },
+  { id: 'aacn', name: 'AACN Educational Advancement Scholarship', amount: 3000, url: 'https://www.aacn.org' },
+  { id: 'tylenol', name: 'Tylenol Future Care Scholarship', amount: 10000, url: 'https://www.tylenol.com' },
+  { id: 'johnson-johnson', name: 'Johnson & Johnson Nurse Scholarship', amount: 5000, url: 'https://nursing.jnj.com' },
+  { id: 'march-of-dimes', name: 'March of Dimes Nursing Scholarship', amount: 5000, url: 'https://www.marchofdimes.org' },
+];
 
-  function applyTheme(key) {
-    const theme = THEMES[key];
-    if (!theme) return;
-    currentTheme = key;
-    const root = document.documentElement;
-    Object.entries(theme.vars).forEach(([k, v]) => root.style.setProperty(k, v));
-    document.querySelectorAll('.swatch').forEach(s => s.classList.toggle('active', s.dataset.theme === key));
-    const nameEl = document.getElementById('themeName');
-    if (nameEl) nameEl.textContent = theme.name;
-  }
+const STATUS_ORDER = { 'awarded': 1, 'submitted': 2, 'in-progress': 3, 'not-started': 4, 'denied': 5 };
 
-  function buildSwatches() {
-    const wrap = document.getElementById('swatches');
-    wrap.innerHTML = '';
-    Object.entries(THEMES).forEach(([key, t]) => {
-      const b = document.createElement('button');
-      b.className = 'swatch' + (key === currentTheme ? ' active' : '');
-      b.style.background = t.swatch;
-      b.dataset.theme = key;
-      b.title = t.name;
-      b.setAttribute('aria-label', t.name + ' theme');
-      b.addEventListener('click', () => applyTheme(key));
-      wrap.appendChild(b);
-    });
-  }
+// ============ COLOR THEMES (light muted pastels) ============
+const PALETTES = {
+  periwinkle: { name: 'Periwinkle', swatch: '#6c8bc0', ramp: {50:'#eff3fa',100:'#dee7f4',200:'#c5d5ec',300:'#9bb4dd',600:'#6c8bc0',700:'#5a78ad',800:'#4b6694'}, heart:'#db83ad', tintA:'rgba(197,213,236,0.6)', tintB:'rgba(212,224,241,0.5)', glowA:'rgba(90,120,173,0.2)', glowB:'rgba(219,131,173,0.16)' },
+  lavender:   { name: 'Lavender',   swatch: '#a25ed2', ramp: {50:'#f4eefb',100:'#e8daf6',200:'#d2b6ec',300:'#b183dd',600:'#8e46c2',700:'#7a33ad',800:'#642793'}, heart:'#db86bf', tintA:'rgba(222,194,242,0.6)', tintB:'rgba(216,190,236,0.5)', glowA:'rgba(122,51,173,0.2)', glowB:'rgba(219,134,191,0.16)' },
+  sage:       { name: 'Sage',       swatch: '#3fa25c', ramp: {50:'#eaf5ed',100:'#d5ecdb',200:'#aadbb6',300:'#72bd85',600:'#348a4c',700:'#26723e',800:'#1f5e34'}, heart:'#e0977a', tintA:'rgba(180,222,190,0.6)', tintB:'rgba(202,234,210,0.5)', glowA:'rgba(38,114,62,0.2)', glowB:'rgba(224,151,122,0.16)' },
+  blush:      { name: 'Blush',      swatch: '#dd648f', ramp: {50:'#fceef3',100:'#f9d8e5',200:'#f2b0c8',300:'#e97ba3',600:'#d0426f',700:'#bf3363',800:'#a02651'}, heart:'#7e8ce4', tintA:'rgba(247,198,216,0.6)', tintB:'rgba(240,200,222,0.5)', glowA:'rgba(191,51,99,0.2)', glowB:'rgba(126,140,228,0.16)' },
+  sky:        { name: 'Sky',        swatch: '#348cd6', ramp: {50:'#eaf3fb',100:'#d0e6f8',200:'#a2cfef',300:'#63ade3',600:'#2f7dc0',700:'#236aae',800:'#1a5389'}, heart:'#e783a0', tintA:'rgba(184,218,244,0.6)', tintB:'rgba(202,230,247,0.5)', glowA:'rgba(35,106,174,0.2)', glowB:'rgba(231,131,160,0.16)' },
+  apricot:    { name: 'Apricot',    swatch: '#cf8622', ramp: {50:'#fcf1e4',100:'#f9e0c2',200:'#f2c68b',300:'#e9a54c',600:'#b8781f',700:'#935a19',800:'#784914'}, heart:'#e07fa0', tintA:'rgba(245,213,160,0.6)', tintB:'rgba(250,230,196,0.5)', glowA:'rgba(147,90,25,0.2)', glowB:'rgba(224,127,160,0.16)' },
+};
 
-  // ---- Demo categories (3 of 8) ----
-  const CATEGORIES = [
-    { id: 'tuition', name: 'Tuition & School Fees', icon: ICONS.grad, type: 'expense', items: [
-      { id: 'tuition', label: 'Tuition' },
-      { id: 'registration', label: 'Registration Fees' },
-      { id: 'lab_fees', label: 'Lab Fees' },
-    ]},
-    { id: 'books', name: 'Books & Supplies', icon: ICONS.book, type: 'expense', items: [
-      { id: 'textbooks', label: 'Textbooks' },
-      { id: 'online_access', label: 'Online Access' },
-      { id: 'laptop', label: 'Laptop' },
-    ]},
-    { id: 'income', name: 'Income & Financial Aid', icon: ICONS.wallet, type: 'income', items: [
-      { id: 'savings', label: 'Savings' },
-      { id: 'scholarships', label: 'Scholarships' },
-      { id: 'loans', label: 'Student Loans' },
-    ]},
-  ];
+// ============ STATE ============
+const state = {};
+CATEGORIES.forEach(c => { c.items.forEach(it => { state[`${c.id}.${it.id}.semester`] = 0; state[`${c.id}.${it.id}.total`] = 0; }); });
+let semesters = 4, autoTotal = true;
+let currentPalette = 'periwinkle';
 
-  // ---- Locked category names (teaser) ----
-  const LOCKED_CATEGORIES = ['Clinical Requirements', 'Equipment', 'Transportation', 'Living Expenses', 'Personal & Misc.'];
+// Each scholarship: { id, name, amount, status, fromStarter }
+let scholarships = [];
+let aidFilters = { status: 'all' };
+let aidSort = 'amount';
 
-  // ---- State ----
-  const state = {};
-  CATEGORIES.forEach(c => c.items.forEach(it => {
-    state[`${c.id}.${it.id}.semester`] = 0;
-    state[`${c.id}.${it.id}.total`] = 0;
-  }));
-  let semesters = 4;
-  let autoTotal = true;
+// ============ HELPERS ============
+const fmt = n => '$' + Math.round(n || 0).toLocaleString('en-US');
+const fmtShort = n => {
+  n = Math.round(n || 0);
+  if (n >= 1000) return '$' + (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(/\.0$/,'') + 'k';
+  return '$' + n.toLocaleString('en-US');
+};
+const getRow = (catId, itemId, field) => {
+  if (field === 'total' && autoTotal) return (state[`${catId}.${itemId}.semester`] || 0) * semesters;
+  return state[`${catId}.${itemId}.${field}`] || 0;
+};
+const getCatTotal = (catId, field) => {
+  const cat = CATEGORIES.find(c => c.id === catId);
+  return cat.items.reduce((s, it) => s + getRow(catId, it.id, field), 0);
+};
+const uid = () => 'sch_' + Math.random().toString(36).slice(2, 10);
+function escapeAttr(s) {
+  return String(s || '').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
 
-  const fmt = n => '$' + Math.round(n || 0).toLocaleString('en-US');
-  const getRow = (catId, itemId, field) => {
-    if (field === 'total' && autoTotal) return (state[`${catId}.${itemId}.semester`] || 0) * semesters;
-    return state[`${catId}.${itemId}.${field}`] || 0;
-  };
-  const getCatTotal = (catId, field) => {
-    const cat = CATEGORIES.find(c => c.id === catId);
-    return cat.items.reduce((s, it) => s + getRow(catId, it.id, field), 0);
-  };
+function showToast(message, type) {
+  type = type || 'success';
+  const toast = document.getElementById('toast');
+  const msg = document.getElementById('toastMsg');
+  const icon = document.getElementById('toastIcon');
+  msg.textContent = message;
+  toast.classList.remove('success', 'error');
+  toast.classList.add(type);
+  icon.innerHTML = type === 'error'
+    ? '<circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/>'
+    : '<polyline points="20 6 9 17 4 12"/>';
+  toast.classList.add('show');
+  clearTimeout(window._toastTimer);
+  window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
+}
 
-  // ---- Toast ----
-  function showToast(message) {
-    const toast = document.getElementById('toast');
-    document.getElementById('toastMsg').textContent = message;
-    toast.classList.add('show');
-    clearTimeout(window._toastTimer);
-    window._toastTimer = setTimeout(() => toast.classList.remove('show'), 2800);
-  }
+// ============ COLOR THEME ============
+function applyPalette(key) {
+  if (!PALETTES[key]) key = 'periwinkle';
+  currentPalette = key;
+  const p = PALETTES[key];
+  const r = document.documentElement.style;
+  [50, 100, 200, 300, 600, 700, 800].forEach(n => r.setProperty('--teal-' + n, p.ramp[n]));
+  r.setProperty('--heart', p.heart);
+  r.setProperty('--bg-tint-a', p.tintA);
+  r.setProperty('--bg-tint-b', p.tintB);
+  r.setProperty('--glow-a', p.glowA);
+  r.setProperty('--glow-b', p.glowB);
+  document.querySelectorAll('.theme-swatch').forEach(el => {
+    el.classList.toggle('active', el.dataset.palette === key);
+    el.setAttribute('aria-pressed', el.dataset.palette === key ? 'true' : 'false');
+  });
+}
 
-  // ---- Render ----
-  function renderCategories() {
-    const container = document.getElementById('categoriesContainer');
-    container.innerHTML = '';
-    CATEGORIES.forEach(cat => {
-      const section = document.createElement('section');
-      section.className = 'category' + (cat.type === 'income' ? ' income' : '');
-      section.innerHTML = `
-        <header class="cat-header">
-          <div class="cat-icon">${cat.icon}</div>
-          <h2 class="cat-title">${cat.name}</h2>
-        </header>
-        <div class="col-headers">
-          <div>Item</div><div class="right">Per Semester</div><div class="right">Program Total</div><div></div>
-        </div>
-        <div class="rows">
-          ${cat.items.map(it => `
-            <div class="row">
-              <label class="row-label">${it.label}</label>
-              <div class="input-cell">
-                <span class="mobile-label">Per semester</span>
-                <div class="currency-input">
-                  <input type="number" min="0" step="any" placeholder="0" data-field="semester" data-cat="${cat.id}" data-item="${it.id}" />
-                </div>
-              </div>
-              <div class="input-cell">
-                <span class="mobile-label">Program total</span>
-                ${autoTotal
-                  ? `<div class="calc-display" data-cat="${cat.id}" data-item="${it.id}">$0</div>`
-                  : `<div class="currency-input"><input type="number" min="0" step="any" placeholder="0" data-field="total" data-cat="${cat.id}" data-item="${it.id}" /></div>`}
-              </div>
-              <div></div>
+function buildThemeSwatches() {
+  const wrap = document.getElementById('themeSwatches');
+  wrap.innerHTML = Object.keys(PALETTES).map(key => {
+    const p = PALETTES[key];
+    return `<button type="button" class="theme-swatch" data-palette="${key}" title="${p.name}" aria-label="${p.name} theme" aria-pressed="false" style="background:${p.swatch};"></button>`;
+  }).join('');
+  wrap.querySelectorAll('.theme-swatch').forEach(btn => {
+    btn.addEventListener('click', () => applyPalette(btn.dataset.palette));
+  });
+}
+
+// ============ BUDGET RENDER ============
+function renderCategories() {
+  const container = document.getElementById('categoriesContainer');
+  container.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const section = document.createElement('section');
+    section.className = 'category' + (cat.type === 'income' ? ' income' : '');
+    let rowsHtml = '';
+    cat.items.forEach(it => {
+      const semVal = state[`${cat.id}.${it.id}.semester`] || 0;
+      const totVal = state[`${cat.id}.${it.id}.total`] || 0;
+      rowsHtml += `
+        <div class="row">
+          <label class="row-label">${it.label}</label>
+          <div class="input-cell">
+            <span class="mobile-label">Per semester</span>
+            <div class="currency-input">
+              <input type="number" min="0" step="any" placeholder="0" value="${semVal > 0 ? semVal : ''}" data-field="semester" data-cat="${cat.id}" data-item="${it.id}" />
             </div>
-          `).join('')}
-        </div>
-        <footer class="subtotal">
-          <div class="subtotal-label">Subtotal</div>
-          <div class="subtotal-value" data-subtotal="semester" data-cat="${cat.id}">$0</div>
-          <div class="subtotal-value" data-subtotal="total" data-cat="${cat.id}">$0</div>
+          </div>
+          <div class="input-cell">
+            <span class="mobile-label">Program total</span>
+            ${autoTotal
+              ? `<div class="calc-display" data-cat="${cat.id}" data-item="${it.id}">$0</div>`
+              : `<div class="currency-input"><input type="number" min="0" step="any" placeholder="0" value="${totVal > 0 ? totVal : ''}" data-field="total" data-cat="${cat.id}" data-item="${it.id}" /></div>`
+            }
+          </div>
           <div></div>
-        </footer>`;
-      container.appendChild(section);
+        </div>`;
     });
+    section.innerHTML = `
+      <header class="cat-header"><div class="cat-icon">${cat.icon}</div><h2 class="cat-title">${cat.name}</h2></header>
+      <div class="col-headers"><div>Item</div><div class="right">Per Semester</div><div class="right">Program Total</div><div></div></div>
+      <div class="rows">${rowsHtml}</div>
+      <footer class="subtotal"><div class="subtotal-label">Subtotal</div><div class="subtotal-value" data-subtotal="semester" data-cat="${cat.id}">$0</div><div class="subtotal-value" data-subtotal="total" data-cat="${cat.id}">$0</div><div></div></footer>`;
+    container.appendChild(section);
+  });
+  container.querySelectorAll('input[type="number"][data-field]').forEach(input => {
+    input.addEventListener('input', e => {
+      const key = `${e.target.dataset.cat}.${e.target.dataset.item}.${e.target.dataset.field}`;
+      state[key] = parseFloat(e.target.value) || 0;
+      updateAll();
+    });
+  });
+}
 
-    container.querySelectorAll('input[type="number"][data-field]').forEach(input => {
-      const key = `${input.dataset.cat}.${input.dataset.item}.${input.dataset.field}`;
-      if (state[key]) input.value = state[key];
-      input.addEventListener('input', e => { state[key] = parseFloat(e.target.value) || 0; updateAll(); });
-    });
+function updateAll() {
+  document.querySelectorAll('.calc-display').forEach(el => {
+    el.textContent = fmt(getRow(el.dataset.cat, el.dataset.item, 'total'));
+  });
+  document.querySelectorAll('[data-subtotal]').forEach(el => {
+    el.textContent = fmt(getCatTotal(el.dataset.cat, el.dataset.subtotal));
+  });
+  const expCats = CATEGORIES.filter(c => c.type === 'expense');
+  const totExpSem = expCats.reduce((s, c) => s + getCatTotal(c.id, 'semester'), 0);
+  const totExpTot = expCats.reduce((s, c) => s + getCatTotal(c.id, 'total'), 0);
+  const totIncSem = getCatTotal('income', 'semester');
+  const totIncTot = getCatTotal('income', 'total');
+  const diffSem = totIncSem - totExpSem;
+  const diffTot = totIncTot - totExpTot;
+  document.getElementById('totalExpenses').textContent = fmt(totExpTot);
+  document.getElementById('totalExpensesSem').textContent = fmt(totExpSem) + ' per semester';
+  document.getElementById('totalIncome').textContent = fmt(totIncTot);
+  document.getElementById('totalIncomeSem').textContent = fmt(totIncSem) + ' per semester';
+  const diffCard = document.getElementById('diffCard');
+  const diffLabel = document.getElementById('diffLabel');
+  diffCard.classList.remove('surplus', 'shortfall');
+  diffCard.classList.add(diffTot >= 0 ? 'surplus' : 'shortfall');
+  diffLabel.textContent = diffTot >= 0 ? 'Surplus' : 'Shortfall';
+  document.getElementById('diffValue').textContent = fmt(Math.abs(diffTot));
+  document.getElementById('diffSub').textContent = fmt(Math.abs(diffSem)) + ' per semester';
+  const progress = document.getElementById('progressSection');
+  if (totExpTot > 0) {
+    progress.style.display = 'block';
+    const pct = Math.min(100, (totIncTot / totExpTot) * 100);
+    document.getElementById('coveragePercent').textContent = Math.round(pct) + '%';
+    const fill = document.getElementById('progressFill');
+    fill.style.width = pct + '%';
+    fill.classList.toggle('good', totIncTot >= totExpTot);
+    fill.classList.toggle('bad', totIncTot < totExpTot);
+  } else { progress.style.display = 'none'; }
+}
+
+// ============ FINANCIAL AID RENDER ============
+function renderAidStats() {
+  let applied = 0, pending = 0, awarded = 0, denied = 0;
+  scholarships.forEach(s => {
+    const amt = Number(s.amount) || 0;
+    if (s.status === 'awarded') awarded += amt;
+    else if (s.status === 'denied') denied += amt;
+    else if (s.status === 'submitted' || s.status === 'in-progress') pending += amt;
+    if (s.status !== 'not-started') applied += amt;
+  });
+  document.getElementById('statApplied').textContent = fmt(applied);
+  document.getElementById('statPending').textContent = fmt(pending);
+  document.getElementById('statAwarded').textContent = fmt(awarded);
+  document.getElementById('statDenied').textContent = fmt(denied);
+}
+
+function applyFiltersAndSort(items) {
+  let result = items.slice();
+  if (aidFilters.status !== 'all') {
+    result = result.filter(s => s.status === aidFilters.status);
+  }
+  result.sort((a, b) => {
+    if (aidSort === 'amount') {
+      return (Number(b.amount) || 0) - (Number(a.amount) || 0);
+    }
+    if (aidSort === 'name') {
+      return (a.name || '').localeCompare(b.name || '');
+    }
+    if (aidSort === 'status') {
+      return (STATUS_ORDER[a.status] || 99) - (STATUS_ORDER[b.status] || 99);
+    }
+    return 0;
+  });
+  return result;
+}
+
+function renderMyScholarships() {
+  const list = document.getElementById('myScholarshipsList');
+  const filtered = applyFiltersAndSort(scholarships);
+
+  document.getElementById('myScholarshipsCount').textContent =
+    `${filtered.length} of ${scholarships.length} scholarships`;
+
+  if (filtered.length === 0) {
+    if (scholarships.length === 0) {
+      list.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        <p>No scholarships yet.</p>
+        <p style="font-size:11px; color:var(--stone-400);">Add a custom one below, or click "Add" on a starter scholarship.</p>
+      </div>`;
+    } else {
+      list.innerHTML = `<div class="empty-state">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="10" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="8" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="12" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="8" x2="15" y2="8"/><line x1="17" y1="16" x2="23" y2="16"/></svg>
+        <p>No scholarships match the current filter.</p>
+      </div>`;
+    }
+    return;
   }
 
-  function buildLockedChips() {
-    const wrap = document.getElementById('lockedChips');
-    wrap.innerHTML = '';
-    LOCKED_CATEGORIES.forEach(name => {
-      const chip = document.createElement('span');
-      chip.className = 'locked-chip';
-      chip.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>${name}`;
-      wrap.appendChild(chip);
+  list.innerHTML = filtered.map(s => `
+    <div class="scholarship-row" data-id="${s.id}">
+      <div>
+        <input type="text" class="sch-name-input" data-field="name" value="${escapeAttr(s.name)}" placeholder="Scholarship name" />
+      </div>
+      <div class="sch-amount">
+        <span class="mobile-tag">Amount</span>
+        <div class="sch-amount-wrap">
+          <input type="number" min="0" step="any" data-field="amount" value="${s.amount || ''}" placeholder="0" />
+        </div>
+      </div>
+      <div>
+        <span class="mobile-tag">Status</span>
+        <div class="sch-status-wrap">
+          <select class="sch-status status-${s.status}" data-field="status">
+            <option value="not-started" ${s.status === 'not-started' ? 'selected' : ''}>Not Started</option>
+            <option value="in-progress" ${s.status === 'in-progress' ? 'selected' : ''}>In Progress</option>
+            <option value="submitted" ${s.status === 'submitted' ? 'selected' : ''}>Submitted</option>
+            <option value="awarded" ${s.status === 'awarded' ? 'selected' : ''}>Awarded</option>
+            <option value="denied" ${s.status === 'denied' ? 'selected' : ''}>Denied</option>
+          </select>
+        </div>
+      </div>
+      <div class="sch-actions">
+        <button type="button" class="icon-btn delete" data-action="delete" title="Remove">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-2 14a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2L5 6"/></svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+
+  list.querySelectorAll('.scholarship-row').forEach(row => {
+    const id = row.dataset.id;
+    row.querySelectorAll('[data-field]').forEach(el => {
+      el.addEventListener('input', e => {
+        const sch = scholarships.find(s => s.id === id);
+        if (!sch) return;
+        const f = e.target.dataset.field;
+        if (f === 'amount') sch[f] = parseFloat(e.target.value) || 0;
+        else sch[f] = e.target.value;
+        renderAidStats();
+        if (f === 'status') {
+          e.target.className = 'sch-status status-' + sch.status;
+        }
+      });
+      el.addEventListener('change', e => {
+        if (e.target.dataset.field === 'status') {
+          renderMyScholarships();
+          renderAidStats();
+        }
+      });
     });
-  }
-
-  function updateAll() {
-    document.querySelectorAll('.calc-display').forEach(el => {
-      el.textContent = fmt(getRow(el.dataset.cat, el.dataset.item, 'total'));
+    row.querySelector('[data-action="delete"]').addEventListener('click', () => {
+      scholarships = scholarships.filter(s => s.id !== id);
+      renderMyScholarships();
+      renderStarterList();
+      renderAidStats();
+      showToast('Removed scholarship');
     });
-    document.querySelectorAll('[data-subtotal]').forEach(el => {
-      el.textContent = fmt(getCatTotal(el.dataset.cat, el.dataset.subtotal));
+  });
+}
+
+function renderStarterList() {
+  const list = document.getElementById('starterScholarshipsList');
+  const addedIds = new Set(scholarships.map(s => s.fromStarter).filter(Boolean));
+
+  list.innerHTML = STARTER_SCHOLARSHIPS.map(s => {
+    const isAdded = addedIds.has(s.id);
+    return `
+      <div class="scholarship-row ${isAdded ? 'added' : ''}">
+        <div>
+          <div class="sch-name">${escapeAttr(s.name)}</div>
+          ${s.url ? `<div class="sch-meta"><a href="${s.url}" target="_blank" rel="noopener" class="external-link">
+            ${s.url.replace(/^https?:\/\//, '').replace(/\/$/, '')}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a></div>` : ''}
+        </div>
+        <div class="sch-amount">
+          <span class="mobile-tag">Up to</span>
+          <span style="font-family: 'Fraunces', serif; font-size: 14px; color: var(--stone-700); font-variant-numeric: tabular-nums;">${fmtShort(s.amount)}</span>
+        </div>
+        <div></div>
+        <div class="sch-actions">
+          ${isAdded
+            ? `<button type="button" class="icon-btn added-state" disabled>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                Added
+              </button>`
+            : `<button type="button" class="icon-btn add" data-add-starter="${s.id}">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                Add
+              </button>`
+          }
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  list.querySelectorAll('[data-add-starter]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const starterId = btn.dataset.addStarter;
+      const starter = STARTER_SCHOLARSHIPS.find(s => s.id === starterId);
+      if (!starter) return;
+      scholarships.push({
+        id: uid(),
+        name: starter.name,
+        amount: starter.amount,
+        status: 'not-started',
+        fromStarter: starter.id,
+      });
+      renderMyScholarships();
+      renderStarterList();
+      renderAidStats();
+      showToast(`Added "${starter.name.length > 30 ? starter.name.slice(0,30) + '...' : starter.name}"`);
     });
-
-    const expCats = CATEGORIES.filter(c => c.type === 'expense');
-    const totExpSem = expCats.reduce((s, c) => s + getCatTotal(c.id, 'semester'), 0);
-    const totExpTot = expCats.reduce((s, c) => s + getCatTotal(c.id, 'total'), 0);
-    const totIncSem = getCatTotal('income', 'semester');
-    const totIncTot = getCatTotal('income', 'total');
-    const diffSem = totIncSem - totExpSem;
-    const diffTot = totIncTot - totExpTot;
-
-    document.getElementById('totalExpenses').textContent = fmt(totExpTot);
-    document.getElementById('totalExpensesSem').textContent = fmt(totExpSem) + ' per semester';
-    document.getElementById('totalIncome').textContent = fmt(totIncTot);
-    document.getElementById('totalIncomeSem').textContent = fmt(totIncSem) + ' per semester';
-
-    const diffCard = document.getElementById('diffCard');
-    const diffLabel = document.getElementById('diffLabel');
-    diffCard.classList.remove('surplus', 'shortfall');
-    if (diffTot >= 0) { diffCard.classList.add('surplus'); diffLabel.textContent = 'Surplus'; }
-    else { diffCard.classList.add('shortfall'); diffLabel.textContent = 'Shortfall'; }
-    document.getElementById('diffValue').textContent = fmt(Math.abs(diffTot));
-    document.getElementById('diffSub').textContent = fmt(Math.abs(diffSem)) + ' per semester';
-  }
-
-  // ---- Settings ----
-  document.getElementById('semesters').addEventListener('input', e => {
-    semesters = Math.max(1, parseInt(e.target.value) || 1); updateAll();
   });
-  document.getElementById('autoTotal').addEventListener('change', e => {
-    autoTotal = e.target.checked; renderCategories(); updateAll();
-  });
-  document.getElementById('clearBtn').addEventListener('click', () => {
-    if (!confirm('Clear all entries in this demo?')) return;
-    Object.keys(state).forEach(k => state[k] = 0);
-    semesters = 4; autoTotal = true;
-    document.getElementById('semesters').value = 4;
-    document.getElementById('autoTotal').checked = true;
-    applyTheme('periwinkle');
-    renderCategories(); updateAll();
-    showToast('Demo cleared');
-  });
+}
 
-  // ---- Locked features ----
-  function goUnlock() { window.location.href = UNLOCK_HREF; }
-  document.getElementById('exportBtn').addEventListener('click', () => {
-    showToast('Excel export is in the full version — unlocking…');
-    setTimeout(goUnlock, 900);
-  });
-  document.getElementById('saveBtn').addEventListener('click', () => {
-    showToast('Saving is in the full version — unlocking…');
-    setTimeout(goUnlock, 900);
-  });
+function renderAidAll() {
+  renderMyScholarships();
+  renderStarterList();
+  renderAidStats();
+}
 
-  // ---- Wire unlock links to checkout if set ----
-  ['bannerUnlock', 'teaserUnlock'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.setAttribute('href', UNLOCK_HREF);
+// ============ AID HANDLERS ============
+document.getElementById('addCustomBtn').addEventListener('click', () => {
+  scholarships.push({
+    id: uid(),
+    name: '',
+    amount: 0,
+    status: 'not-started',
+    fromStarter: null,
   });
+  renderMyScholarships();
+  renderAidStats();
+  setTimeout(() => {
+    const rows = document.querySelectorAll('#myScholarshipsList .scholarship-row');
+    const lastRow = rows[rows.length - 1];
+    if (lastRow) {
+      const input = lastRow.querySelector('input[data-field="name"]');
+      if (input) input.focus();
+    }
+  }, 50);
+});
 
-  // ---- Init ----
-  buildSwatches();
-  applyTheme(currentTheme);
-  buildLockedChips();
+document.getElementById('filterStatus').addEventListener('change', e => {
+  aidFilters.status = e.target.value;
+  renderMyScholarships();
+});
+document.getElementById('sortBy').addEventListener('change', e => {
+  aidSort = e.target.value;
+  renderMyScholarships();
+});
+
+// ============ TABS ============
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.tab').forEach(t => t.classList.toggle('active', t === tab));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.toggle('active', p.id === `panel-${target}`));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+});
+document.getElementById('goToPlanner').addEventListener('click', () => {
+  document.querySelector('.tab[data-tab="planner"]').click();
+});
+
+// ============ SETTINGS ============
+document.getElementById('semesters').addEventListener('input', e => {
+  semesters = Math.max(1, parseInt(e.target.value) || 1);
+  updateAll();
+});
+document.getElementById('autoTotal').addEventListener('change', e => {
+  autoTotal = e.target.checked;
   renderCategories();
   updateAll();
+});
+
+// ============ CLEAR (with undo) ============
+let _clearBackup = null;
+let _clearTimer = null;
+const clearBtn = document.getElementById('clearBtn');
+const clearBtnLabel = document.getElementById('clearBtnLabel');
+
+function doClear() {
+  _clearBackup = {
+    state: Object.assign({}, state),
+    semesters: semesters,
+    autoTotal: autoTotal,
+    scholarships: JSON.parse(JSON.stringify(scholarships)),
+  };
+  Object.keys(state).forEach(k => state[k] = 0);
+  semesters = 4;
+  autoTotal = true;
+  scholarships = [];
+  document.getElementById('semesters').value = 4;
+  document.getElementById('autoTotal').checked = true;
+  renderCategories();
+  updateAll();
+  renderAidAll();
+  clearBtnLabel.textContent = 'Undo';
+  clearBtn.classList.remove('btn-warn');
+  clearBtn.classList.add('btn-undo');
+  showToast('Cleared everything — click Undo within 10 seconds');
+  if (_clearTimer) clearTimeout(_clearTimer);
+  _clearTimer = setTimeout(() => {
+    _clearBackup = null;
+    clearBtnLabel.textContent = 'Clear';
+    clearBtn.classList.remove('btn-undo');
+    clearBtn.classList.add('btn-warn');
+  }, 10000);
+}
+
+function doUndo() {
+  if (!_clearBackup) return;
+  Object.keys(_clearBackup.state).forEach(k => state[k] = _clearBackup.state[k]);
+  semesters = _clearBackup.semesters;
+  autoTotal = _clearBackup.autoTotal;
+  scholarships = _clearBackup.scholarships || [];
+  document.getElementById('semesters').value = semesters;
+  document.getElementById('autoTotal').checked = autoTotal;
+  _clearBackup = null;
+  if (_clearTimer) { clearTimeout(_clearTimer); _clearTimer = null; }
+  clearBtnLabel.textContent = 'Clear';
+  clearBtn.classList.remove('btn-undo');
+  clearBtn.classList.add('btn-warn');
+  renderCategories();
+  updateAll();
+  renderAidAll();
+  showToast('Restored');
+}
+
+clearBtn.addEventListener('click', () => {
+  if (_clearBackup) doUndo();
+  else doClear();
+});
+
+// ============ SAVE ============
+document.getElementById('saveBtn').addEventListener('click', () => {
+  const payload = {
+    app: 'nursing-budget-planner',
+    version: 3,
+    savedAt: new Date().toISOString(),
+    semesters: semesters,
+    autoTotal: autoTotal,
+    palette: currentPalette,
+    values: Object.assign({}, state),
+    scholarships: scholarships,
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `nursing-budget-${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  showToast('Saved! Keep the .json file to reload later.');
+});
+
+// ============ LOAD ============
+document.getElementById('loadBtn').addEventListener('click', () => {
+  document.getElementById('loadFileInput').click();
+});
+document.getElementById('loadFileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (data.app !== 'nursing-budget-planner' || !data.values) throw new Error('Invalid file');
+      Object.keys(state).forEach(k => state[k] = 0);
+      Object.keys(data.values).forEach(k => { if (k in state) state[k] = Number(data.values[k]) || 0; });
+      semesters = Math.max(1, parseInt(data.semesters) || 4);
+      autoTotal = data.autoTotal !== false;
+      applyPalette(data.palette || 'periwinkle');
+      // Sanitize loaded scholarships (strip any old deadline field)
+      scholarships = Array.isArray(data.scholarships) ? data.scholarships.map(s => ({
+        id: s.id || uid(),
+        name: s.name || '',
+        amount: Number(s.amount) || 0,
+        status: s.status || 'not-started',
+        fromStarter: s.fromStarter || null,
+      })) : [];
+      document.getElementById('semesters').value = semesters;
+      document.getElementById('autoTotal').checked = autoTotal;
+      renderCategories();
+      updateAll();
+      renderAidAll();
+      showToast('Loaded successfully');
+    } catch (err) {
+      showToast('Could not read that file.', 'error');
+    }
+    e.target.value = '';
+  };
+  reader.onerror = () => showToast('Error reading file', 'error');
+  reader.readAsText(file);
+});
+
+// ============ EXPORT TO EXCEL ============
+document.getElementById('exportBtn').addEventListener('click', () => {
+  if (typeof XLSX === 'undefined') {
+    showToast('Excel library still loading. Please try again.', 'error');
+    return;
+  }
+  const wb = XLSX.utils.book_new();
+
+  // --- Budget Detail sheet ---
+  const detail = [['Nursing School Budget Planner'], [`Generated: ${new Date().toLocaleDateString()}`], [`Semesters in program: ${semesters}`], [], ['Category', 'Item', 'Cost per Semester', 'Program Total']];
+  CATEGORIES.forEach(c => {
+    c.items.forEach(it => { detail.push([c.name, it.label, getRow(c.id, it.id, 'semester'), getRow(c.id, it.id, 'total')]); });
+    detail.push([c.name, 'Subtotal', getCatTotal(c.id, 'semester'), getCatTotal(c.id, 'total')]);
+    detail.push([]);
+  });
+  const ws1 = XLSX.utils.aoa_to_sheet(detail);
+  ws1['!cols'] = [{ wch: 26 }, { wch: 36 }, { wch: 18 }, { wch: 18 }];
+  const range = XLSX.utils.decode_range(ws1['!ref']);
+  for (let R = 5; R <= range.e.r; ++R) {
+    ['C', 'D'].forEach(col => {
+      const addr = `${col}${R + 1}`;
+      if (ws1[addr] && typeof ws1[addr].v === 'number') { ws1[addr].t = 'n'; ws1[addr].z = '"$"#,##0'; }
+    });
+  }
+  XLSX.utils.book_append_sheet(wb, ws1, 'Budget Detail');
+
+  // --- Summary sheet ---
+  const expCats = CATEGORIES.filter(c => c.type === 'expense');
+  const totExpSem = expCats.reduce((s, c) => s + getCatTotal(c.id, 'semester'), 0);
+  const totExpTot = expCats.reduce((s, c) => s + getCatTotal(c.id, 'total'), 0);
+  const totIncSem = getCatTotal('income', 'semester');
+  const totIncTot = getCatTotal('income', 'total');
+  const summary = [['Summary'], [`Semesters: ${semesters}`], [], ['', 'Per Semester', 'Program Total'], ['Total Expenses', totExpSem, totExpTot], ['Total Income', totIncSem, totIncTot], ['Difference (Income − Expenses)', totIncSem - totExpSem, totIncTot - totExpTot], [], ['Category Breakdown'], ['Category', 'Per Semester', 'Program Total']];
+  CATEGORIES.forEach(c => { summary.push([c.name, getCatTotal(c.id, 'semester'), getCatTotal(c.id, 'total')]); });
+  const ws2 = XLSX.utils.aoa_to_sheet(summary);
+  ws2['!cols'] = [{ wch: 32 }, { wch: 18 }, { wch: 18 }];
+  const range2 = XLSX.utils.decode_range(ws2['!ref']);
+  for (let R = 4; R <= range2.e.r; ++R) {
+    ['B', 'C'].forEach(col => {
+      const addr = `${col}${R + 1}`;
+      if (ws2[addr] && typeof ws2[addr].v === 'number') { ws2[addr].t = 'n'; ws2[addr].z = '"$"#,##0'; }
+    });
+  }
+  XLSX.utils.book_append_sheet(wb, ws2, 'Summary');
+
+  // --- Financial Aid sheet ---
+  const STATUS_LABELS = {
+    'not-started': 'Not Started',
+    'in-progress': 'In Progress',
+    'submitted': 'Submitted',
+    'awarded': 'Awarded',
+    'denied': 'Denied',
+  };
+  const aidRows = [['Financial Aid Tracker'], [`Total scholarships: ${scholarships.length}`], []];
+  let appliedTot = 0, pendingTot = 0, awardedTot = 0, deniedTot = 0;
+  scholarships.forEach(s => {
+    const amt = Number(s.amount) || 0;
+    if (s.status === 'awarded') awardedTot += amt;
+    else if (s.status === 'denied') deniedTot += amt;
+    else if (s.status === 'submitted' || s.status === 'in-progress') pendingTot += amt;
+    if (s.status !== 'not-started') appliedTot += amt;
+  });
+  aidRows.push(['Stats:']);
+  aidRows.push(['Total Applied', appliedTot]);
+  aidRows.push(['Pending', pendingTot]);
+  aidRows.push(['Awarded', awardedTot]);
+  aidRows.push(['Denied', deniedTot]);
+  aidRows.push([]);
+  aidRows.push(['Scholarship', 'Amount', 'Status']);
+  scholarships.forEach(s => {
+    aidRows.push([
+      s.name || '(no name)',
+      Number(s.amount) || 0,
+      STATUS_LABELS[s.status] || s.status,
+    ]);
+  });
+  const ws3 = XLSX.utils.aoa_to_sheet(aidRows);
+  ws3['!cols'] = [{ wch: 42 }, { wch: 14 }, { wch: 14 }];
+  const range3 = XLSX.utils.decode_range(ws3['!ref']);
+  for (let R = 0; R <= range3.e.r; ++R) {
+    const addr = `B${R + 1}`;
+    if (ws3[addr] && typeof ws3[addr].v === 'number') {
+      ws3[addr].t = 'n'; ws3[addr].z = '"$"#,##0';
+    }
+  }
+  XLSX.utils.book_append_sheet(wb, ws3, 'Financial Aid');
+
+  XLSX.writeFile(wb, `nursing-budget-${new Date().toISOString().slice(0, 10)}.xlsx`);
+  showToast('Excel file downloaded');
+});
+
+// ============ INIT ============
+buildThemeSwatches();
+applyPalette(currentPalette);
+renderCategories();
+updateAll();
+renderAidAll();
+
+// ============ DEMO LOCK ============
+// Excel export and save/load are full-version features. Intercept those
+// buttons (capture phase + stopImmediatePropagation) so their real handlers
+// never run, and show an upgrade prompt instead.
+function showDemoUpsell(feature) {
+  showToast(feature + ' is available in the full planner — $19.99');
+}
+[
+  ['exportBtn', 'Excel export'],
+  ['saveBtn', 'Saving your budget'],
+  ['loadBtn', 'Loading a saved budget'],
+].forEach(([id, label]) => {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    e.stopImmediatePropagation();
+    showDemoUpsell(label);
+  }, true);
+});
 </script>
 </body>
 </html>

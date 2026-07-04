@@ -9,6 +9,7 @@ A single-page marketing site for the **Nursing School Budget Planner**, a downlo
 | File | Purpose |
 | --- | --- |
 | `index.html` | The landing page. Self-contained (all CSS inline) so it works on GitHub Pages with zero build steps. |
+| `demo.html` | A public, try-before-you-buy demo of the planner. Budgeting works fully; Excel export, save/load, and the full scholarship list are disabled and prompt to buy. Safe to publish. |
 | `favicon.svg` | Browser tab icon (periwinkle heart). |
 | `.nojekyll` | Tells GitHub Pages to serve the files directly, skipping Jekyll processing. |
 | `README.md` | This file. |
@@ -46,7 +47,9 @@ and give each buy button `class="payhip-buy-button"` with `data-product="kHBuE"`
 
 ## Important: keep the paid file out of this public repo
 
-This repo is your **free storefront**. Do **not** upload the actual `nursing-budget-planner.html` product file here — a public GitHub Pages site would let anyone download the thing you're selling for free. Keep the planner as the **Payhip download** only. (If you want a public *demo*, make a trimmed-down or watermarked copy specifically for that.)
+This repo is your **free storefront**. Do **not** upload the full `nursing-budget-planner.html` product file here — a public site would let anyone download the thing you're selling for free. Keep the full planner as the **Payhip download** only.
+
+`demo.html` is the safe, public version to host: it's fully interactive for budgeting, but Excel export, save/load, and the complete scholarship list are turned off and prompt visitors to buy. Publish `demo.html`; keep the full planner on Payhip.
 
 ## License
 
