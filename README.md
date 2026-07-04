@@ -1,84 +1,53 @@
-# Nursing School Budget Planner
+# Nursing Budget Planner — Landing Page
 
-A calm, step-by-step budget planner for nursing students, plus a landing page
-that sells it as a **one-time $12.99** purchase. Pure static site — HTML, CSS
-and a little JavaScript. No build step, no backend.
+A single-page marketing site for the **Nursing School Budget Planner**, a downloadable budgeting + scholarship-tracking tool sold on Payhip. The page links to the Payhip product for checkout; the paid planner file itself is delivered through Payhip after purchase (see the note below).
 
-## What's in here
+**Buy link:** https://payhip.com/b/kHBuE
 
-| File            | What it is                                                        |
-| --------------- | ----------------------------------------------------------------- |
-| `index.html`    | Landing page (hero, features, $12.99 pricing, FAQ, CTA).          |
-| `demo.html`     | Free limited demo — 3 categories, export/save locked.            |
-| `planner.html`  | The full budget planner app (instructions + planner tabs).       |
-| `netlify.toml`  | Netlify config: publish folder, friendly URLs, headers.           |
-| `.gitignore`    | Keeps junk files out of the repo.                                 |
-| `README.md`     | This file.                                                        |
+## What's in this repo
 
-The landing page's "Get it" buttons open the full planner; the "Try the live
-demo" button opens `demo.html`. The demo runs the real planner with three
-categories unlocked, while Excel export and save prompt visitors to buy. Every
-"Unlock" / "Buy" button works the moment the site is live — see **Charging
-$12.99** below to wire up real payment.
+| File | Purpose |
+| --- | --- |
+| `index.html` | The landing page. Self-contained (all CSS inline) so it works on GitHub Pages with zero build steps. |
+| `favicon.svg` | Browser tab icon (periwinkle heart). |
+| `.nojekyll` | Tells GitHub Pages to serve the files directly, skipping Jekyll processing. |
+| `README.md` | This file. |
+| `LICENSE` | Copyright / usage terms. |
 
-## Deploy to Netlify from GitHub
+## Deploy it free with GitHub Pages
 
-1. **Create a GitHub repo** and push these files to it:
-   ```bash
-   git init
-   git add .
-   git commit -m "Nursing budget planner site"
-   git branch -M main
-   git remote add origin https://github.com/YOUR-USERNAME/YOUR-REPO.git
-   git push -u origin main
-   ```
+1. Create a new repository on GitHub (public).
+2. Upload every file in this folder to the repo root (including the hidden `.nojekyll`).
+3. Go to **Settings → Pages**.
+4. Under **Build and deployment**, set **Source** to *Deploy from a branch*, choose the `main` branch and the `/ (root)` folder, then **Save**.
+5. Wait about a minute. Your site goes live at `https://<your-username>.github.io/<repo-name>/`.
 
-2. **Connect it to Netlify:**
-   - Go to <https://app.netlify.com> and sign in.
-   - Click **Add new site → Import an existing project**.
-   - Choose **GitHub** and pick your repository.
-   - Leave **Build command** empty and set **Publish directory** to `.`
-     (Netlify reads `netlify.toml` and fills these in for you).
-   - Click **Deploy**.
+### Optional: use your own domain
+Add a file named `CNAME` (no extension) containing just your domain, e.g. `nursebudget.com`, then point your domain's DNS at GitHub Pages per GitHub's docs.
 
-3. Netlify gives you a live URL like `your-site.netlify.app`. Every push to
-   `main` redeploys automatically. Add a custom domain under
-   **Site settings → Domain management** whenever you're ready.
+## Editing the page
 
-## Charging $12.99 (optional)
+Everything you'll likely want to change lives in `index.html`:
 
-The site ships with buttons that simply open the planner. To actually collect
-$12.99, the easiest path is a **Stripe Payment Link**:
+- **Price** — the page shows `$19.99`. Search for `$19.99` (it appears in the nav button, hero, pricing card, and final call-to-action) and replace each with your price. Also update the pricing card's big number: look for `<span class="cur">$</span>19<span class="cents">.99</span>`.
+- **Payhip link** — the buy URL `https://payhip.com/b/kHBuE` appears on every button. Search-and-replace it if your product link ever changes.
+- **Brand name** — "Nursing Budget Planner" appears in the nav, footer, and `<title>`. Rename to your store/product name if you prefer.
+- **Colors** — the palette is defined once at the top of the `<style>` block as CSS variables (`--peri-700`, `--heart`, etc.), matching the planner itself.
+- **Copyright / disclaimer** — bottom of the file, in the footer.
 
-1. In Stripe, go to **Payment Links → New**, add a product priced **$12.99**,
-   set it to a **one-time** payment.
-2. Under the link's options, set the **success URL** to your planner page,
-   e.g. `https://your-site.netlify.app/planner.html`.
-3. Copy the payment link URL.
-4. Open `index.html`, find this line near the bottom, and paste your link:
-   ```js
-   const CHECKOUT_URL = ""; // e.g. "https://buy.stripe.com/your_link"
-   ```
-   `demo.html` has the same `CHECKOUT_URL` line — paste your link there too so
-   the demo's "Unlock" buttons go to checkout instead of the pricing section.
-5. Commit and push. Every Buy button now sends people to Stripe, and Stripe
-   returns paying customers to the planner.
+### Want Payhip's on-site checkout overlay instead of a link?
+The buttons currently open your Payhip product page in a new tab (simple and reliable). If you'd rather have the checkout pop up over the landing page, add Payhip's script before `</body>`:
 
-> Note: a static site can't truly *lock* the planner behind payment on its own —
-> anyone with the planner URL can open it. The Payment Link flow above is the
-> common, low-friction approach for a one-time digital product. If you need a
-> hard paywall, you'd add a small serverless function (Netlify Functions) to
-> verify the Stripe session before serving the planner.
-
-## Run it locally
-
-Just open `index.html` in a browser, or serve the folder:
-
-```bash
-python3 -m http.server 8000
-# then visit http://localhost:8000
+```html
+<script src="https://payhip.com/payhip.js"></script>
 ```
+
+and give each buy button `class="payhip-buy-button"` with `data-product="kHBuE"`. See Payhip's own embed instructions for the current attributes.
+
+## Important: keep the paid file out of this public repo
+
+This repo is your **free storefront**. Do **not** upload the actual `nursing-budget-planner.html` product file here — a public GitHub Pages site would let anyone download the thing you're selling for free. Keep the planner as the **Payhip download** only. (If you want a public *demo*, make a trimmed-down or watermarked copy specifically for that.)
 
 ## License
 
-You own this copy — use and modify it freely.
+See `LICENSE`. The landing-page code here is your own to deploy for your product; it isn't intended for redistribution as a template.
